@@ -33,6 +33,9 @@
 
             # ws client
             websocat
+
+            # browser
+            falkon
           ];
         };
       };

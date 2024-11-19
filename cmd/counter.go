@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/v3lmx/counter/internal/api"
+	"github.com/v3lmx/counter/internal/core"
 )
 
 func checkCORS(next http.Handler) http.Handler {
@@ -29,7 +30,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	api.HandleConnect(mux, logger)
+	events := make(chan string)
+	responses := make(chan chan string)
+
+	go core.Game(events, responses, logger)
+
+	api.HandleConnect(mux, events, responses, logger)
 
 	logger.Info("starting server on port 8000")
 	logger.Fatal(http.ListenAndServe(":8000", checkCORS(mux)))

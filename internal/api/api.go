@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
-	"github.com/v3lmx/counter/internal/core"
+	// "github.com/v3lmx/counter/internal/core"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,11 +15,10 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func HandleConnect(mux *http.ServeMux, logger *log.Logger) {
+func HandleConnect(mux *http.ServeMux, events chan<- string, responses chan<- chan string, logger *log.Logger) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("Get /connect")
 
-		// w.Write("ee")
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			logger.Error("error upgrading connection: ", err)
@@ -27,23 +26,39 @@ func HandleConnect(mux *http.ServeMux, logger *log.Logger) {
 			return
 		}
 
-		events := make(chan string)
+		response := make(chan string)
+		responses <- response
 
-		go handleEvents(conn, events)
-
-		core.HandleGame(events)
+		go handleEvents(conn, events, logger)
+		handleResponses(conn, response, logger)
 
 		logger.Debug("end")
 	})
 }
 
-func handleEvents(conn *websocket.Conn, events chan string) {
+func handleEvents(conn *websocket.Conn, events chan<- string, logger *log.Logger) {
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Errorf("Error : %v", err)
+			logger.Errorf("Error : %v", err)
+			return
 		}
+		logger.Debugf("msg: %s", msg)
 
 		events <- string(msg)
+		logger.Debug("sent msg")
+	}
+}
+
+func handleResponses(conn *websocket.Conn, response <-chan string, logger *log.Logger) {
+	for {
+		r := <-response
+		logger.Debugf("resp: %v", r)
+
+		err := conn.WriteMessage(websocket.TextMessage, []byte(r))
+		if err != nil {
+			logger.Errorf("Error : %v", err)
+			return
+		}
 	}
 }

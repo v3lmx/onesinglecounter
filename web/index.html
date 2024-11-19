@@ -1,0 +1,65 @@
+<!doctype html>
+<header>
+    <title>counter</title>
+</header>
+
+<body>
+    <div id="counter-box">
+
+        <h1 id="counter">0</h1>
+        <button id="increment" class="btn" onclick="increment()">increment</button>
+        <button id="reset" class="btn">reset</button>
+    </div>
+</body>
+
+<style>
+    #counter {
+        border-radius: 0.5em;
+        padding: 20px;
+        width: 10em;
+        text-align: center;
+    }
+
+    .btn {
+        border-radius: 0.5em;
+        width: 15rem;
+        font-size: 2rem;
+        cursor: pointer;
+
+    }
+
+    #counter-box {
+        border-radius: 0.5em;
+        font: 1.2em sans-serif;
+
+        height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        flex-direction: column;
+    }
+</style>
+
+<script>
+    let ws = new WebSocket("ws://localhost:8000/connect")
+    ws.onopen = (event) => {
+        console.log("connected")
+    };
+    ws.onmessage = (event) => {
+        //if (event.data == "increment") {
+        var el = document.getElementById("counter");
+        //el.innerHTML == el.innerHTML + 1;
+        console.log('inner: ' + el.innerText);
+        el.innerText++;
+
+        //}
+        console.log(event.data)
+    };
+
+    function increment() {
+        //console.log('incrementing')
+        ws.send("increment")
+        //console.log('incremented')
+    }
+
+</script>
