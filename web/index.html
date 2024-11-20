@@ -1,14 +1,13 @@
 <!doctype html>
 <header>
-    <title>counter</title>
+    <title>osc</title>
 </header>
 
 <body>
     <div id="counter-box">
-
-        <h1 id="counter">0</h1>
+        <h1 id="counter"></h1>
         <button id="increment" class="btn" onclick="increment()">increment</button>
-        <button id="reset" class="btn">reset</button>
+        <button id="reset" class="btn" onclick="reset()">reset</button>
     </div>
 </body>
 
@@ -43,23 +42,32 @@
 <script>
     let ws = new WebSocket("ws://localhost:8000/connect")
     ws.onopen = (event) => {
-        console.log("connected")
+        ws.send("current")
     };
     ws.onmessage = (event) => {
-        //if (event.data == "increment") {
-        var el = document.getElementById("counter");
-        //el.innerHTML == el.innerHTML + 1;
-        console.log('inner: ' + el.innerText);
-        el.innerText++;
+        if (event.data == "increment") {
+            var el = document.getElementById("counter");
+            el.innerText++;
+        }
+        if (event.data == "reset") {
+            var el = document.getElementById("counter");
+            el.innerText = 0;
+        }
+        let e = event.data.split(":")
+        if (e[0] == "current") {
+            var el = document.getElementById("counter");
+            el.innerText = e[1];
+        }
 
-        //}
         console.log(event.data)
     };
 
     function increment() {
-        //console.log('incrementing')
         ws.send("increment")
-        //console.log('incremented')
+    }
+
+    function reset() {
+        ws.send("reset")
     }
 
 </script>

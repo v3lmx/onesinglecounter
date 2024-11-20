@@ -22,21 +22,23 @@ func checkCORS(next http.Handler) http.Handler {
 }
 
 func main() {
-	logger := log.NewWithOptions(os.Stdout, log.Options{
+	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
 		Level:           log.DebugLevel,
 		ReportCaller:    true,
 		ReportTimestamp: true,
-	})
+	}))
 
 	mux := http.NewServeMux()
 
-	events := make(chan string)
-	responses := make(chan chan string)
+	events := make(chan core.Event)
+	responses := make(chan core.Response)
+	best := make(chan uint)
 
-	go core.Game(events, responses, logger)
+	go core.Game(events, responses, best)
+	go core.Best(best)
 
-	api.HandleConnect(mux, events, responses, logger)
+	api.HandleConnect(mux, events, responses)
 
-	logger.Info("starting server on port 8000")
-	logger.Fatal(http.ListenAndServe(":8000", checkCORS(mux)))
+	log.Info("starting server on port 8000")
+	log.Fatal(http.ListenAndServe(":8000", checkCORS(mux)))
 }

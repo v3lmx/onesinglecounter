@@ -1,0 +1,5 @@
+procs:
+  server:
+    shell: "wgo run cmd/counter.go"
+  browser:
+    shell: "falkon"
