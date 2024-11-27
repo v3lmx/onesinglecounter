@@ -18,7 +18,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func HandleConnect(mux *http.ServeMux, events chan<- core.Event, responses chan<- core.Response) {
+func HandleConnect(mux *http.ServeMux, events chan<- core.Event, clients chan<- core.Client) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Get /connect")
 
@@ -29,20 +29,20 @@ func HandleConnect(mux *http.ServeMux, events chan<- core.Event, responses chan<
 			return
 		}
 
-		response := core.NewResponse()
-		responses <- response
+		client := core.NewClient()
+		clients <- client
 
 		var wg sync.WaitGroup
 
-		go handleEvents(conn, events, response.Id, &wg)
-		go handleResponses(conn, response.C, &wg)
+		go handleEvents(conn, events, client.Id, &wg)
+		go handleResponses(conn, client.C, &wg)
 
 		// When either finishes, we have an error and we must cleanup
 		wg.Add(1)
 		wg.Wait()
 
-		response.Done = true
-		responses <- response
+		client.Done = true
+		clients <- client
 
 		log.Debug("end")
 	})
@@ -66,12 +66,14 @@ func handleEvents(conn *websocket.Conn, events chan<- core.Event, dest uuid.UUID
 			cmd = core.CommandReset
 		case "current":
 			cmd = core.CommandCurrent
+		case "best":
+			cmd = core.CommandBest
 		default:
 			log.Errorf("Invalid command: %s", msg)
 			continue
 		}
 
-		events <- core.Event{Cmd: cmd, Dest: dest}
+		events <- core.Event{Cmd: cmd, ClientDest: dest}
 		log.Debug("sent msg")
 	}
 }

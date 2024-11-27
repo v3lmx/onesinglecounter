@@ -8,6 +8,9 @@
         <h1 id="counter"></h1>
         <button id="increment" class="btn" onclick="increment()">increment</button>
         <button id="reset" class="btn" onclick="reset()">reset</button>
+        <p id="best">
+        <p>
+            <button id="refresh-best" onclick="best()">refresh</button>
     </div>
 </body>
 
@@ -43,6 +46,7 @@
     let ws = new WebSocket("ws://localhost:8000/connect")
     ws.onopen = (event) => {
         ws.send("current")
+        ws.send("best")
     };
     ws.onmessage = (event) => {
         if (event.data == "increment") {
@@ -58,6 +62,10 @@
             var el = document.getElementById("counter");
             el.innerText = e[1];
         }
+        if (e[0] == "best") {
+            var el = document.getElementById("best");
+            el.innerText = e[1];
+        }
 
         console.log(event.data)
     };
@@ -68,6 +76,10 @@
 
     function reset() {
         ws.send("reset")
+    }
+
+    function best() {
+        ws.send("best")
     }
 
 </script>

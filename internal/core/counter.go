@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/charmbracelet/log"
@@ -13,31 +14,32 @@ const (
 	CommandIncrement Command = iota
 	CommandReset
 	CommandCurrent
+	CommandBest
 )
 
 type Event struct {
-	Cmd  Command
-	Dest uuid.UUID
+	Cmd        Command
+	ClientDest uuid.UUID
 }
 
-type Response struct {
+type Client struct {
 	Id   uuid.UUID
 	C    chan string
 	Done bool
 }
 
-func NewResponse() Response {
-	return Response{
+func NewClient() Client {
+	return Client{
 		Id:   uuid.New(),
 		C:    make(chan string),
 		Done: false,
 	}
 }
 
-func Game(events <-chan Event, responses <-chan Response, best chan<- uint) {
+func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint, requestBest chan<- struct{}, responseBest <-chan CurrentBest) {
 	log.Debug("handle game")
-	count := 0
-	res := make(map[uuid.UUID]chan string, 0)
+	count := uint(0)
+	clients := make(map[uuid.UUID]chan string, 0)
 
 	for {
 		log.Debug("waiting for event")
@@ -53,24 +55,29 @@ func Game(events <-chan Event, responses <-chan Response, best chan<- uint) {
 			case CommandIncrement:
 				count += 1
 				msg = "increment"
-				dispatch(res, msg)
+				dispatch(clients, msg)
 			case CommandReset:
 				count = 0
 				msg = "reset"
-				dispatch(res, msg)
+				dispatch(clients, msg)
 			case CommandCurrent:
-				msg = "current:" + strconv.Itoa(count)
-				dispatchSingle(res, event.Dest, msg)
+				msg = "current:" + strconv.Itoa(int(count))
+				dispatchSingle(clients, event.ClientDest, msg)
+			case CommandBest:
+				requestBest <- struct{}{}
+				currentBest := <-responseBest
+				dispatchSingle(clients, event.ClientDest, formatBest(currentBest))
 			default:
-				log.Warnf("invalid event: %v", event)
+				log.Errorf("invalid event: %v", event)
 			}
 			log.Debug(event)
-		case r := <-responses:
+			best <- count
+		case r := <-clientsChan:
 			if r.Done {
-				delete(res, r.Id)
+				delete(clients, r.Id)
 				continue
 			}
-			res[r.Id] = r.C
+			clients[r.Id] = r.C
 		}
 
 	}
@@ -89,4 +96,8 @@ func dispatchSingle(responses map[uuid.UUID]chan string, dest uuid.UUID, msg str
 	}
 
 	c <- msg
+}
+
+func formatBest(best CurrentBest) string {
+	return fmt.Sprintf("best:%v", best)
 }

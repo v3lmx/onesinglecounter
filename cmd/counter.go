@@ -31,13 +31,15 @@ func main() {
 	mux := http.NewServeMux()
 
 	events := make(chan core.Event)
-	responses := make(chan core.Response)
-	best := make(chan uint)
+	clients := make(chan core.Client)
+	count := make(chan uint)
+	requestBest := make(chan struct{})
+	responseBest := make(chan core.CurrentBest)
 
-	go core.Game(events, responses, best)
-	go core.Best(best)
+	go core.Game(events, clients, count, requestBest, responseBest)
+	go core.Best(count, requestBest, responseBest)
 
-	api.HandleConnect(mux, events, responses)
+	api.HandleConnect(mux, events, clients)
 
 	log.Info("starting server on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", checkCORS(mux)))
