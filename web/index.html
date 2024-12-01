@@ -4,13 +4,37 @@
 </header>
 
 <body>
-    <div id="counter-box">
+    <div id="counter-box" class="box">
         <h1 id="counter"></h1>
         <button id="increment" class="btn" onclick="increment()">increment</button>
         <button id="reset" class="btn" onclick="reset()">reset</button>
-        <p id="best">
-        <p>
-            <button id="refresh-best" onclick="best()">refresh</button>
+    </div>
+    <div id="best-box" class="box">
+        <section>
+            <span id="label-best-alltime">All-time high: </span>
+            <span id="value-best-alltime">1</span>
+        </section>
+        <section>
+            <span id="best-year"></span>
+        </section>
+        <section>
+            <span id="best-month"></span>
+        </section>
+        <section>
+            <span id="best-week"></span>
+        </section>
+        <section>
+            <span id="best-day"></span>
+        </section>
+        <section>
+            <span id="best-hour"></span>
+        </section>
+        <section>
+            <span id="best-minute"></span>
+        </section>
+        <br>
+        <button id="refresh-best" onclick="best()">refresh</button>
+        <button id="debug-best" onclick="updateBest('value-best-alltime', 6)">debug-best</button>
     </div>
 </body>
 
@@ -27,22 +51,38 @@
         width: 15rem;
         font-size: 2rem;
         cursor: pointer;
-
     }
 
-    #counter-box {
+    .box {
         border-radius: 0.5em;
         font: 1.2em sans-serif;
+        margin: 5vh;
 
-        height: 60vh;
         display: flex;
         align-items: center;
         justify-content: space-evenly;
         flex-direction: column;
     }
+
+    #best-box {
+        height: 30vh;
+    }
+
+    #counter-box {
+        height: 60vh;
+    }
 </style>
 
 <script>
+    const timespans = Object.freeze({
+        MINUTE: Symbol("minute"),
+        HOUR: Symbol("hour"),
+        DAY: Symbol("day"),
+        WEEK: Symbol("week"),
+        MONTH: Symbol("month"),
+        YEAR: Symbol("year"),
+        ALLTIME: Symbol("alltime"),
+    });
     let ws = new WebSocket("ws://localhost:8000/connect")
     ws.onopen = (event) => {
         ws.send("current")
@@ -80,6 +120,11 @@
 
     function best() {
         ws.send("best")
+    }
+
+    function updateBest(bestId, value) {
+        var el = document.getElementById(bestId);
+        el.innerText = value;
     }
 
 </script>

@@ -36,9 +36,9 @@ func NewClient() Client {
 	}
 }
 
-func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint, requestBest chan<- struct{}, responseBest <-chan CurrentBest) {
+func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest) {
 	log.Debug("handle game")
-	count := uint(0)
+	count := uint64(0)
 	clients := make(map[uuid.UUID]chan string, 0)
 
 	for {
@@ -65,8 +65,10 @@ func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint, requ
 				dispatchSingle(clients, event.ClientDest, msg)
 			case CommandBest:
 				requestBest <- struct{}{}
-				currentBest := <-responseBest
-				dispatchSingle(clients, event.ClientDest, formatBest(currentBest))
+				go func() {
+					currentBest := <-responseBest
+					dispatchSingle(clients, event.ClientDest, formatBest(currentBest))
+				}()
 			default:
 				log.Errorf("invalid event: %v", event)
 			}

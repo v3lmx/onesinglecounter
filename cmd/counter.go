@@ -32,7 +32,7 @@ func main() {
 
 	events := make(chan core.Event)
 	clients := make(chan core.Client)
-	count := make(chan uint)
+	count := make(chan uint64)
 	requestBest := make(chan struct{})
 	responseBest := make(chan core.CurrentBest)
 
