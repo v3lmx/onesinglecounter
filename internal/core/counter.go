@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/charmbracelet/log"
@@ -15,6 +14,13 @@ const (
 	CommandReset
 	CommandCurrent
 	CommandBest
+)
+
+const (
+	MessageIncrement = "inc"
+	MessageReset     = "res"
+	MessageCurrent   = "current"
+	MessageBest      = "best"
 )
 
 type Event struct {
@@ -50,25 +56,21 @@ func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, re
 			}
 			log.Debugf("received event : %v", event)
 
-			var msg string
+			// var msg Message
 			switch event.Cmd {
-			case CommandIncrement:
-				count += 1
-				msg = "increment"
-				dispatch(clients, msg)
 			case CommandReset:
 				count = 0
-				msg = "reset"
-				dispatch(clients, msg)
+				dispatch(clients, MessageReset)
+			case CommandIncrement:
+				count += 1
+				dispatch(clients, MessageIncrement)
 			case CommandCurrent:
-				msg = "current:" + strconv.Itoa(int(count))
+				msg := MessageCurrent + ":" + strconv.Itoa(int(count))
 				dispatchSingle(clients, event.ClientDest, msg)
 			case CommandBest:
 				requestBest <- struct{}{}
-				go func() {
-					currentBest := <-responseBest
-					dispatchSingle(clients, event.ClientDest, formatBest(currentBest))
-				}()
+				currentBest := <-responseBest
+				dispatchSingle(clients, event.ClientDest, MessageBest+":"+currentBest.Format())
 			default:
 				log.Errorf("invalid event: %v", event)
 			}
@@ -98,8 +100,4 @@ func dispatchSingle(responses map[uuid.UUID]chan string, dest uuid.UUID, msg str
 	}
 
 	c <- msg
-}
-
-func formatBest(best CurrentBest) string {
-	return fmt.Sprintf("best:%v", best)
 }

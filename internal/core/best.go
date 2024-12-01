@@ -1,8 +1,8 @@
 package core
 
 import (
-	"encoding/binary"
-	"slices"
+	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/robfig/cron/v3"
@@ -18,37 +18,25 @@ type CurrentBest struct {
 	AllTime uint64
 }
 
-const (
-	tagMinute  byte = 10
-	tagHour    byte = 11
-	tagDay     byte = 12
-	tagWeek    byte = 13
-	tagMonth   byte = 14
-	tagYear    byte = 15
-	tagAllTime byte = 16
-)
+func (best CurrentBest) Format() string {
+	var sb strings.Builder
 
-func formatTimestamp(tag byte, value uint64) []byte {
-	buf := make([]byte, binary.MaxVarintLen64)
-	l := binary.PutUvarint(buf, value)
-	m := Message{Tag: tag, Value: buf[:l]}
-	return m.TLV()
-}
+	sb.WriteString("alltime:")
+	sb.WriteString(strconv.Itoa(int(best.AllTime)))
+	sb.WriteString(":year:")
+	sb.WriteString(strconv.Itoa(int(best.Year)))
+	sb.WriteString(":month:")
+	sb.WriteString(strconv.Itoa(int(best.Month)))
+	sb.WriteString(":week:")
+	sb.WriteString(strconv.Itoa(int(best.Week)))
+	sb.WriteString(":day:")
+	sb.WriteString(strconv.Itoa(int(best.Day)))
+	sb.WriteString(":hour:")
+	sb.WriteString(strconv.Itoa(int(best.Hour)))
+	sb.WriteString(":minute:")
+	sb.WriteString(strconv.Itoa(int(best.Minute)))
 
-func (best CurrentBest) Format() (Message, error) {
-	tag := ServerMask & MessageTypeGetCurrent
-
-	value := slices.Concat(
-		formatTimestamp(tagMinute, best.Minute),
-		formatTimestamp(tagHour, best.Hour),
-		formatTimestamp(tagDay, best.Day),
-		formatTimestamp(tagWeek, best.Week),
-		formatTimestamp(tagMonth, best.Month),
-		formatTimestamp(tagYear, best.Year),
-		formatTimestamp(tagAllTime, best.AllTime),
-	)
-
-	return Message{Tag: tag, Value: value}, nil
+	return sb.String()
 }
 
 func newBest() CurrentBest {
@@ -145,6 +133,6 @@ func Best(count <-chan uint64, request <-chan struct{}, broadcast chan<- Current
 		case <-nextYear:
 			b.Year = lastCount
 		}
-		log.Debugf("current best: %v", b)
+		log.Debugf("current best: %s", b.Format())
 	}
 }

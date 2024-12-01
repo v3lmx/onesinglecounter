@@ -10,31 +10,37 @@
         <button id="reset" class="btn" onclick="reset()">reset</button>
     </div>
     <div id="best-box" class="box">
+        <h4>Highest count</h4>
         <section>
-            <span id="label-best-alltime">All-time high: </span>
-            <span id="value-best-alltime">1</span>
+            <span id="label-best-alltime">All-time: </span>
+            <span id="value-best-alltime"></span>
         </section>
         <section>
-            <span id="best-year"></span>
+            <span id="label-best-year">Yearly: </span>
+            <span id="value-best-year"></span>
         </section>
         <section>
-            <span id="best-month"></span>
+            <span id="label-best-month">Monthly: </span>
+            <span id="value-best-month"></span>
         </section>
         <section>
-            <span id="best-week"></span>
+            <span id="label-best-week">Weekly: </span>
+            <span id="value-best-week"></span>
         </section>
         <section>
-            <span id="best-day"></span>
+            <span id="label-best-day">Daily: </span>
+            <span id="value-best-day"></span>
         </section>
         <section>
-            <span id="best-hour"></span>
+            <span id="label-best-hour">Hourly: </span>
+            <span id="value-best-hour"></span>
         </section>
         <section>
-            <span id="best-minute"></span>
+            <span id="label-best-minute">Minute: </span>
+            <span id="value-best-minute"></span>
         </section>
         <br>
         <button id="refresh-best" onclick="best()">refresh</button>
-        <button id="debug-best" onclick="updateBest('value-best-alltime', 6)">debug-best</button>
     </div>
 </body>
 
@@ -83,48 +89,57 @@
         YEAR: Symbol("year"),
         ALLTIME: Symbol("alltime"),
     });
+    const messageReset = "res"
+    const messageIncrement = "inc"
+    const messageCurrent = "current"
+    const messageBest = "best"
+
     let ws = new WebSocket("ws://localhost:8000/connect")
+    ws.binaryType = 'arraybuffer';
     ws.onopen = (event) => {
-        ws.send("current")
-        ws.send("best")
+        current()
+        best()
     };
     ws.onmessage = (event) => {
-        if (event.data == "increment") {
-            var el = document.getElementById("counter");
-            el.innerText++;
-        }
-        if (event.data == "reset") {
+        if (event.data == messageReset) {
             var el = document.getElementById("counter");
             el.innerText = 0;
         }
+        if (event.data == messageIncrement) {
+            var el = document.getElementById("counter");
+            el.innerText++;
+        }
         let e = event.data.split(":")
-        if (e[0] == "current") {
+        if (e[0] == messageCurrent) {
             var el = document.getElementById("counter");
             el.innerText = e[1];
         }
-        if (e[0] == "best") {
-            var el = document.getElementById("best");
-            el.innerText = e[1];
+        if (e[0] == messageBest) {
+            for (let i = 1; i < e.length - 1; i += 2) {
+                let time = e[i]
+                let value = e[i + 1]
+                var el = document.getElementById("value-best-" + time);
+                el.innerText = value;
+
+            }
         }
 
         console.log(event.data)
     };
 
-    function increment() {
-        ws.send("increment")
+    function reset() {
+        ws.send(messageReset)
     }
 
-    function reset() {
-        ws.send("reset")
+    function increment() {
+        ws.send(messageIncrement)
+    }
+
+    function current() {
+        ws.send(messageCurrent)
     }
 
     function best() {
-        ws.send("best")
+        ws.send(messageBest)
     }
-
-    function updateBest(bestId, value) {
-        var el = document.getElementById(bestId);
-        el.innerText = value;
-    }
-
 </script>

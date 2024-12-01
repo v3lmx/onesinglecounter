@@ -56,17 +56,17 @@ func handleEvents(conn *websocket.Conn, events chan<- core.Event, dest uuid.UUID
 			wg.Done()
 			return
 		}
-		log.Debugf("msg: %s", msg)
+		log.Debugf("msg: %b", msg)
 
 		var cmd core.Command
 		switch string(msg) {
-		case "increment":
-			cmd = core.CommandIncrement
-		case "reset":
+		case core.MessageReset:
 			cmd = core.CommandReset
-		case "current":
+		case core.MessageIncrement:
+			cmd = core.CommandIncrement
+		case core.MessageCurrent:
 			cmd = core.CommandCurrent
-		case "best":
+		case core.MessageBest:
 			cmd = core.CommandBest
 		default:
 			log.Errorf("Invalid command: %s", msg)
