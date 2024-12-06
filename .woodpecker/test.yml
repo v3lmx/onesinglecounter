@@ -11,5 +11,6 @@ steps:
   - name: a-test-step
     image: golang:1.23
     commands:
+      - ls
       - go get .
       - go build ./cmd/counter
