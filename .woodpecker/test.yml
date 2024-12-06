@@ -2,10 +2,10 @@ skip_clone: true
 
 when:
   - event: push
-    branch: test
+    branch: test,main
 
 steps:
   - name: build
-    image: alpine
+    image: debian
     commands:
       - echo "test test test "
