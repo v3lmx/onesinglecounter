@@ -8,3 +8,8 @@ steps:
     image: debian
     commands:
       - echo "test test test "
+  - name: a-test-step
+    image: golang:1.23
+    commands:
+      - go get .
+      - go build ./cmd/counter
