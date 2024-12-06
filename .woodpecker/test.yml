@@ -12,5 +12,5 @@ steps:
     image: golang:1.23
     commands:
       - ls
-      - go get .
+      - pwd
       - go build ./cmd/counter
