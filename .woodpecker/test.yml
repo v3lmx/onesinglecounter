@@ -1,8 +1,5 @@
-skip_clone: true
-
-# when:
-#   - event: push
-#     branch: test,main
+when:
+  - event: manual
 
 steps:
   - name: build
