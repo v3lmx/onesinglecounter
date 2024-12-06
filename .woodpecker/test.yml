@@ -1,8 +1,8 @@
 skip_clone: true
 
-when:
-  - event: push
-    branch: test,main
+# when:
+#   - event: push
+#     branch: test,main
 
 steps:
   - name: build
