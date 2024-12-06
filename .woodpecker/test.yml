@@ -1,14 +1,10 @@
-skip_clone: true
+# skip_clone: true
 
 when:
   - event: manual
 
 steps:
   - name: build
-    image: debian
-    commands:
-      - echo "test test test "
-  - name: a-test-step
     image: golang:1.23
     commands:
       - ls
