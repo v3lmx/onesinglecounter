@@ -35,9 +35,10 @@ func main() {
 	count := make(chan uint64)
 	requestBest := make(chan struct{})
 	responseBest := make(chan core.CurrentBest)
+	cronBest := make(chan core.CurrentBest)
 
-	go core.Game(events, clients, count, requestBest, responseBest)
-	go core.Best(count, requestBest, responseBest)
+	go core.Game(events, clients, count, requestBest, responseBest, cronBest)
+	go core.Best(count, requestBest, responseBest, cronBest)
 
 	api.HandleConnect(mux, events, clients)
 

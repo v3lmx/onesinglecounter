@@ -89,6 +89,7 @@
         YEAR: Symbol("year"),
         ALLTIME: Symbol("alltime"),
     });
+    const timespansList = ["minute", "hour", "day", "week", "month", "year", "alltime"]
     const messageReset = "res"
     const messageIncrement = "inc"
     const messageCurrent = "current"
@@ -123,6 +124,7 @@
 
             }
         }
+        updateBest()
 
         console.log(event.data)
     };
@@ -131,7 +133,7 @@
         ws.send(messageReset)
     }
 
-    function increment() {
+    async function increment() {
         ws.send(messageIncrement)
     }
 
@@ -141,5 +143,52 @@
 
     function best() {
         ws.send(messageBest)
+    }
+
+    function updateBest() {
+        const current = document.getElementById("counter").innerText;
+
+        let minuteBest = document.getElementById("value-best-minute");
+        if (parseInt(current) <= parseInt(minuteBest.innerText)) {
+            return
+        }
+        minuteBest.innerText = current;
+
+        let hourBest = document.getElementById("value-best-hour");
+        if (parseInt(current) <= parseInt(hourBest.innerText)) {
+            return
+        }
+        hourBest.innerText = current;
+
+        let dayBest = document.getElementById("value-best-day");
+        if (parseInt(current) <= parseInt(dayBest.innerText)) {
+            return
+        }
+        dayBest.innerText = current;
+
+        let weekBest = document.getElementById("value-best-week");
+        if (parseInt(current) <= parseInt(weekBest.innerText)) {
+            return
+        }
+        weekBest.innerText = current;
+
+        let monthBest = document.getElementById("value-best-month");
+        if (parseInt(current) <= parseInt(monthBest.innerText)) {
+            return
+        }
+        monthBest.innerText = current;
+
+        let yearBest = document.getElementById("value-best-year");
+        if (parseInt(current) <= parseInt(yearBest.innerText)) {
+            return
+        }
+        yearBest.innerText = current;
+
+        let alltimeBest = document.getElementById("value-best-alltime");
+        if (parseInt(current) <= parseInt(alltimeBest.innerText)) {
+            return
+        }
+        alltimeBest.innerText = current;
+
     }
 </script>

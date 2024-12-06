@@ -1,0 +1,9 @@
+when:
+  - event: push
+    branch: test
+
+steps:
+  - name: build
+    image: alpine
+    commands:
+      - echo "test test test "

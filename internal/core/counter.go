@@ -42,17 +42,27 @@ func NewClient() Client {
 	}
 }
 
-func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest) {
+func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest, cronBest <-chan CurrentBest) {
 	log.Debug("handle game")
 	count := uint64(0)
 	clients := make(map[uuid.UUID]chan string, 0)
+
+	go func() {
+		for {
+			currentBest, ok := <-cronBest
+			if !ok {
+				log.Error("error receiving from channel currentBest")
+			}
+			dispatch(clients, MessageBest+":"+currentBest.Format())
+		}
+	}()
 
 	for {
 		log.Debug("waiting for event")
 		select {
 		case event, ok := <-events:
 			if !ok {
-				log.Error("error receiving from channel")
+				log.Error("error receiving from channel event")
 			}
 			log.Debugf("received event : %v", event)
 

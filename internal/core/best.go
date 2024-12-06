@@ -43,7 +43,7 @@ func newBest() CurrentBest {
 	return CurrentBest{}
 }
 
-func Best(count <-chan uint64, request <-chan struct{}, broadcast chan<- CurrentBest) {
+func Best(count <-chan uint64, request <-chan struct{}, response chan<- CurrentBest, broadcast chan<- CurrentBest) {
 	nextMinute := make(chan struct{})
 	nextHour := make(chan struct{})
 	nextDay := make(chan struct{})
@@ -87,7 +87,7 @@ func Best(count <-chan uint64, request <-chan struct{}, broadcast chan<- Current
 		// case <-backup:
 		// 	//backup
 		case <-request:
-			broadcast <- b
+			response <- b
 		case c := <-count:
 			lastCount = c
 			if c <= b.Minute {
@@ -120,8 +120,7 @@ func Best(count <-chan uint64, request <-chan struct{}, broadcast chan<- Current
 			b.AllTime = c
 		case <-nextMinute:
 			b.Minute = lastCount
-			// causes deadlock
-			// broadcast <- b
+			broadcast <- b
 		case <-nextHour:
 			b.Hour = lastCount
 		case <-nextDay:
