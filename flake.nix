@@ -18,7 +18,7 @@
     in {
       packages = {
         default = pkgs.buildGoModule {
-          pname = "osc";
+          pname = "counter";
           version = "0.0.1";
           src = ./.;
           vendorHash = "sha256-2NsSRaFiFu7ZKl/OS07s0RK+094sIRyuuYXZzOQFsIs=";
