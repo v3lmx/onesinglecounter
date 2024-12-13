@@ -1,40 +1,47 @@
 {
-  description = "buzzer";
+  description = "osc";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
-    flake-utils.url = "github:numtide/flake-utils";
+    utils.url = "github:numtide/flake-utils";
   };
 
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
+    utils,
   }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {inherit system;};
+    utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+      };
     in {
+      packages = {
+        default = pkgs.buildGoModule {
+          pname = "osc";
+          version = "0.0.1";
+          src = ./.;
+          vendorHash = "sha256-2NsSRaFiFu7ZKl/OS07s0RK+094sIRyuuYXZzOQFsIs=";
+          proxyVendor = true;
+
+          meta = {
+            description = "osc server";
+            homepage = "https://github.com/v3lmx/onesinglecounter";
+            license = pkgs.lib.licenses.gpl3Plus;
+            maintainers = with pkgs.lib.maintainers; [v3lmx];
+          };
+        };
+      };
+
       devShells = {
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            # backend
             go_1_23
             golangci-lint
 
-            # frontend
-            nodejs
-            pnpm
-
-            # run commands
             mprocs
-
-            # live reload go files
             wgo
-
-            # ws client
             websocat
-
-            # browser
             falkon
           ];
         };
