@@ -16,8 +16,10 @@
         inherit system;
       };
     in {
-      packages = {
-        default = pkgs.buildGoModule {
+      packages = rec {
+        default = server;
+        server = pkgs.buildGoModule {
+          # will be the package run
           pname = "counter";
           version = "0.0.1";
           src = ./.;
