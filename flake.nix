@@ -52,5 +52,6 @@
       nixosModules = {
         osc = import ./osc.nix;
       };
+      nixosModule = self.nixosModules.osc;
     });
 }
