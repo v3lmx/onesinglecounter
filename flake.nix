@@ -10,6 +10,7 @@
     self,
     nixpkgs,
     utils,
+    ...
   }:
     utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
