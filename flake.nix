@@ -48,5 +48,9 @@
           ];
         };
       };
+
+      nixosModules = {
+        osc = import ./osc.nix;
+      };
     });
 }
