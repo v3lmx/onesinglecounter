@@ -19,6 +19,14 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
 
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          config-inline: |
+            [registry."${{ secrets.REGISTRY }}"]
+              http = true
+              insecure = true
+
       - name: Build Docker image
         id: build
         run: |
