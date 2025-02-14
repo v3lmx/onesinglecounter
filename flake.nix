@@ -34,6 +34,14 @@
             maintainers = with pkgs.lib.maintainers; [v3lmx];
           };
         };
+        container = pkgs.dockerTools.buildImage {
+          name = "onesinglecounter";
+          tag = "latest";
+          copyToRoot = server;
+          config = {
+            Cmd = ["${server}/bin/counter"];
+          };
+        };
       };
 
       devShells = {
@@ -41,6 +49,8 @@
           buildInputs = with pkgs; [
             go_1_23
             golangci-lint
+
+            uglify-js
 
             mprocs
             wgo
