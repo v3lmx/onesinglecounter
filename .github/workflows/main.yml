@@ -15,3 +15,4 @@ jobs:
       - run: sudo wg set wg0 listen-port 51820 private-key privatekey peer $"secrets.WIREGUARD_PUBLIC_KEY" allowed-ips 10.200.0.0/24 endpoint $"secrets.PEER_ADDRESS"
       - run: sudo ip link set up dev wg0
       - run: curl -vvv http://10.200.0.1
+      - run: curl -vvv http://10.200.0.1
