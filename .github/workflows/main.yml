@@ -27,8 +27,10 @@ jobs:
               http = true
               insecure = true
 
-      - run: echo '{"insecure-repositories": ["${{ secrets.REGISTRY }}"]}' | sudo tee /etc/docker/daemon.json
-
+      - run: |
+          echo '{"insecure-repositories": ["'"$REGISTRY_URL"'"]}' | sudo tee /etc/docker/daemon.json
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY }}
       - name: Build Docker image
         id: build
         run: |
