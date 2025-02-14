@@ -27,7 +27,7 @@ jobs:
               http = true
               insecure = true
 
-      - run: echo '{"insecure-registries" : [ "${{ secrets.REGISTRY }}" ]}' > /etc/docker/daemon.json
+      - run: echo '''{"insecure-registries" : [ "${{ secrets.REGISTRY }}" ]}''' > /etc/docker/daemon.json
 
       - name: Build Docker image
         id: build
