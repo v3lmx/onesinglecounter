@@ -34,5 +34,6 @@ jobs:
       - run: sudo ip link set up dev wg0
       - run: ping -c 3 10.200.0.1
       - run: docker load < result
-      - run: docker push "${{ secrets.REGISTRY }}"/${{ github.repository }}:latest
+      - run: docker tag onesinglecounter:latest "${{ secrets.REGISTRY }}"/onesinglecounter:latest
+      - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:latest
 
