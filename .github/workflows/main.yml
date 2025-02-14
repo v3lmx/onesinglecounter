@@ -20,12 +20,14 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
         with:
           config-inline: |
             [registry."${{ secrets.REGISTRY }}"]
               http = true
               insecure = true
+
+      - run: sudo cat /etc/docker/daemon.json
 
       - name: Build Docker image
         id: build
@@ -44,4 +46,3 @@ jobs:
       - run: docker load < result
       - run: docker tag onesinglecounter:latest "${{ secrets.REGISTRY }}"/onesinglecounter:latest
       - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:latest
-
