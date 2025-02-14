@@ -12,7 +12,7 @@ jobs:
       - run: echo "${{ secrets.WIREGUARD_PRIVATE_KEY }}" > privatekey
       - run: sudo ip link add dev wg0 type wireguard
       - run: sudo ip address add dev wg0 10.200.0.101 peer 10.200.0.1
-      - run: sudo wg set wg0 listen-port 51820 private-key privatekey peer "${{ secrets.WIREGUARD_PUBLIC_KEY }}" allowed-ips 10.200.0.0/24 endpoint "${{ secrets.PEER_ADDRESS }}"
+      - run: sudo wg set wg0 listen-port 51820 private-key privatekey peer "${{ secrets.WIREGUARD_PUBLIC_KEY }}" allowed-ips 10.200.0.0/24 endpoint "${{ secrets.PEER_ADDRESS }}":51820
       - run: sudo ip link set up dev wg0
       - run: curl -vvv http://10.200.0.1
       - run: curl -vvv http://10.200.0.1
