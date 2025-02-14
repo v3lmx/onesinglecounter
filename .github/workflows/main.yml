@@ -27,7 +27,8 @@ jobs:
               http = true
               insecure = true
 
-      - run: echo '{"insecure-repositories": ["${{ secrets.REPOSITORY }}"]}' | sudo tee /etc/docker/daemon.json
+      - run: echo "${{ secrets.REPOSITORY }}" > $REPO
+      - run: echo '{"insecure-repositories": ["$(echo $REPO)"]}' | sudo tee /etc/docker/daemon.json
 
       - name: Build Docker image
         id: build
