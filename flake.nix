@@ -39,7 +39,7 @@
           tag = "latest";
           copyToRoot = server;
           config = {
-            Cmd = "${server}/bin/counter";
+            Cmd = ["${server}/bin/counter"];
           };
         };
       };
