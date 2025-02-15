@@ -33,10 +33,10 @@ jobs:
       - run: sudo wg set wg0 listen-port 51820 private-key privatekey peer "${{ secrets.WIREGUARD_PUBLIC_KEY }}" allowed-ips 10.200.0.0/24 endpoint "${{ secrets.PEER_ADDRESS }}":51820
       - run: sudo ip link set up dev wg0
       - run: docker load < result
-      - run: docker tag onesinglecounter:latest "${{ secrets.REGISTRY }}"/onesinglecounter:latest
+      - run: docker tag onesinglecounter:latest "${{ secrets.REGISTRY }}"/onesinglecounter:test
 
       - name: Add hosts to /etc/hosts
         run: |
             sudo echo "${{ secrets.PRIVATE_IP }} ${{ secrets.PRIVATE_ADDRESS }}" | sudo tee -a /etc/hosts
 
-      - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:latest
+      - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:test
