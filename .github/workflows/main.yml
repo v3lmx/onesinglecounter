@@ -34,4 +34,7 @@ jobs:
       - run: sudo ip link set up dev wg0
       - run: docker load < result
       - run: docker tag onesinglecounter:latest "${{ secrets.REGISTRY }}"/onesinglecounter:latest
+      - name: Add hosts to /etc/hosts
+        run: |
+            sudo echo "${{ PRIVATE_IP }} ${{ secrets.PRIVATE_ADDRESS }}" | sudo tee -a /etc/hosts
       - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:latest
