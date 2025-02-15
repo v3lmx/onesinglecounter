@@ -37,6 +37,6 @@ jobs:
 
       - name: Add hosts to /etc/hosts
         run: |
-            sudo echo "${{ PRIVATE_IP }} ${{ secrets.PRIVATE_ADDRESS }}" | sudo tee -a /etc/hosts
+            sudo echo "${{ secrets.PRIVATE_IP }} ${{ secrets.PRIVATE_ADDRESS }}" | sudo tee -a /etc/hosts
 
       - run: docker push "${{ secrets.REGISTRY }}"/onesinglecounter:latest
