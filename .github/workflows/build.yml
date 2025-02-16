@@ -43,7 +43,7 @@ jobs:
         run: docker load < result
 
       - name: Tag Docker image
-        run: docker tag ${{ variables.IMAGE_NAME }}:latest "${{ secrets.REGISTRY }}"/${{ variables.IMAGE_NAME }}:latest
+        run: docker tag ${{ vars.IMAGE_NAME }}:latest "${{ secrets.REGISTRY }}"/${{ vars.IMAGE_NAME }}:latest
 
       - name: Push Docker image
         run: docker push "${{ secrets.REGISTRY }}"/${{ vars.IMAGE_NAME }}:latest
