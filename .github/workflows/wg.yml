@@ -11,8 +11,8 @@ on:
         type: string
       port:
         required: false
-        type: number
-        default: 51820
+        type: string
+        default: "51820"
       allowed_ips:
         description: "Allowed IPs range (eg. '10.1.2.0/24')"
         required: true
