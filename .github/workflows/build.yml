@@ -19,6 +19,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
   wg:
     name: Setup wireguard
+    runs-on: ubuntu-latest
     uses: ./.github/workflows/wg.yml
     with:
       client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
