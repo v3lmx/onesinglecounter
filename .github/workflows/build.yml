@@ -1,0 +1,45 @@
+name: build and push docker
+
+on:
+  push:
+    branches: ['main', 'ci']
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v8
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
+      - name: Setup wireguard
+        uses: ./.github/workflows/wg.yml
+        with:
+          client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
+          server_ip: ${{ vars.WIREGUARD_SERVER_IP }}
+          port: ${{ vars.WIREGUARD_PORT }}
+          allowed_ips: ${{ vars.WIREGUARD_ALLOWED_IPS }}
+          server_public_key: ${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}
+        secrets:
+          server_ip: ${{ secrets.SERVER_IP }}
+          private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
+
+      - name: Build Docker image
+        run: |
+          nix build -L --accept-flake-config .#container
+          [ ! -L result ] && exit 1
+
+      - name: Load Docker image
+        run: docker load < result
+
+      - name: Tag Docker image
+        run: docker tag ${{ variables.IMAGE_NAME }}:latest "${{ secrets.REGISTRY }}"/${{ variables.IMAGE_NAME }}:latest
+
+      - name: Push Docker image
+        run: docker push "${{ secrets.REGISTRY }}"/${{ vars.IMAGE_NAME }}:latest
