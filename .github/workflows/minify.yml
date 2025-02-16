@@ -1,5 +1,9 @@
-on: [push]
-  branches: ["ci"]
+name: minify
+
+on:
+  push:
+    branches: ["ci"]
+  workflow_dispatch:
 
 jobs:
   minify:
