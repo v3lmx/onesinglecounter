@@ -59,6 +59,38 @@ jobs:
         run: |
             sudo echo "${{ vars.WIREGUARD_SERVER_IP }} ${{ secrets.SERVER_PRIVATE_URL }}" | sudo tee -a /etc/hosts
 
-      - uses: actions/checkout@v4
+
+      - name: Checkout repository
+        uses: actions/checkout@v4  
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install UglifyJS
+        run: npm install -g uglify-js
+
+      - name: Minify JavaScript files
+        run: |
+          uglifyjs web/script.js --compress dead_code,evaluate,booleans,loops,unused,hoist_funs,hoist_vars,if_return,join_vars --mangle -o script.min.js
+
+      - name: setup ssh
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE }}
+          SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_bot
+          chmod 600 ~/.ssh/id_bot
+          ssh-keyscan ${{ vars.WIREGUARD_SERVER_IP }} >> ~/.ssh/known_hosts
+
+
+
+      - name: Copy minified files
+        run: |
+          rsync -avz ./script.min.js bot@{{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/script.min.js
+          rsync -avz ./web/index.html bot@{{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/index.html
+
 
 
