@@ -41,5 +41,9 @@ jobs:
       - name: Tag Docker image
         run: docker tag ${{ vars.IMAGE_NAME }}:latest ${{ secrets.REGISTRY }}/${{ vars.IMAGE_NAME }}:latest
 
+      - name: Add wg hosts to /etc/hosts
+        run: |
+            sudo echo "${{ secrets.SERVER_IP }} ${{ inputs.SERVER_PRIVATE_URL }}" | sudo tee -a /etc/hosts
+
       - name: Push Docker image
         run: docker push "${{ secrets.REGISTRY }}"/${{ vars.IMAGE_NAME }}:latest
