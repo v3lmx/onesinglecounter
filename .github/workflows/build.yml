@@ -89,8 +89,8 @@ jobs:
 
       - name: Copy minified files
         run: |
-          rsync -avz ./script.min.js bot@{{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/script.min.js
-          rsync -avz ./web/index.html bot@{{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/index.html
+          rsync -avz ./script.min.js bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/script.min.js
+          rsync -avz ./web/index.html bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/index.html
 
 
 
