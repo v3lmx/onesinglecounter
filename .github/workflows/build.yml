@@ -39,4 +39,4 @@ jobs:
             sudo echo "${{ secrets.SERVER_IP }} ${{ vars.SERVER_PRIVATE_URL }}" | sudo tee -a /etc/hosts
 
       - name: Push Docker image
-        run: docker push "${{ secrets.REGISTRY }}"/${{ vars.IMAGE_NAME }}:latest
+        run: docker push ${{ secrets.REGISTRY }}/${{ vars.IMAGE_NAME }}:latest
