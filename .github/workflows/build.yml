@@ -33,9 +33,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
 
       - name: Build Docker image
-        run: |
-          nix build -L --accept-flake-config .#container
-          [ ! -L result ] && exit 1
+        run: nix build -L --accept-flake-config .#container
 
       - name: Load Docker image
         run: docker load < result
