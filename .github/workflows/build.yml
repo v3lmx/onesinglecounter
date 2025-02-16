@@ -18,19 +18,17 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
   wg:
-    name: Setup wireguard
-    runs-on: ubuntu-latest
-      uses: ./.github/workflows/wg.yml
-      with:
-        client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
-        server_ip: ${{ vars.WIREGUARD_SERVER_IP }}
-        port: ${{ vars.WIREGUARD_PORT }}
-        allowed_ips: ${{ vars.WIREGUARD_ALLOWED_IPS }}
-        server_public_key: ${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}
-      secrets:
-        server_ip: ${{ secrets.SERVER_IP }}
-        server_private_url: ${{ secrets.SERVER_PRIVATE_URL }}
-        private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
+    uses: ./.github/workflows/wg.yml
+    with:
+      client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
+      server_ip: ${{ vars.WIREGUARD_SERVER_IP }}
+      port: ${{ vars.WIREGUARD_PORT }}
+      allowed_ips: ${{ vars.WIREGUARD_ALLOWED_IPS }}
+      server_public_key: ${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}
+    secrets:
+      server_ip: ${{ secrets.SERVER_IP }}
+      server_private_url: ${{ secrets.SERVER_PRIVATE_URL }}
+      private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
 
   push:
     name: Build and push image
