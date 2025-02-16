@@ -36,7 +36,7 @@ jobs:
 
       - name: Add wg hosts to /etc/hosts
         run: |
-            sudo echo "${{ vars.WIREGUARD_SERVER_IP }} ${{ vars.SERVER_PRIVATE_URL }}" | sudo tee -a /etc/hosts
+            sudo echo "${{ vars.WIREGUARD_SERVER_IP }} ${{ secrets.SERVER_PRIVATE_URL }}" | sudo tee -a /etc/hosts
 
       - name: Push Docker image
         run: docker push ${{ secrets.REGISTRY }}/${{ vars.IMAGE_NAME }}:latest
