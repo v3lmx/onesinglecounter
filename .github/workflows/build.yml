@@ -31,7 +31,7 @@ jobs:
       - run: echo "${{ secrets.WIREGUARD_PRIVATE_KEY }}" > privatekey
       - run: sudo ip link add dev wg0 type wireguard
       - run: sudo ip address add dev wg0 ${{ vars.WIREGUARD_CLIENT_IP }} peer ${{ vars.WIREGUARD_SERVER_IP }}
-      - run: sudo wg set wg0 listen-port ${{ vars.WIREGUARD_PORT }} private-key privatekey peer "${{ vars.WIREGUARD_SERVER_IP }}" allowed-ips ${{ vars.WIREGUARD_ALLOWED_IPS }} endpoint "${{ secrets.WIREGUARD_SERVER_PUBLIC_KEY }}":${{ vars.WIREGUARD_PORT }}
+      - run: sudo wg set wg0 listen-port ${{ vars.WIREGUARD_PORT }} private-key privatekey peer "${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}" allowed-ips ${{ vars.WIREGUARD_ALLOWED_IPS }} endpoint "${{ secrets.SERVER_IP }}":${{ vars.WIREGUARD_PORT }}
       - run: sudo ip link set up dev wg0
 
       - name: Add wg hosts to /etc/hosts
