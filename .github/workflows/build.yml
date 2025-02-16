@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build image
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,19 +17,23 @@ jobs:
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
+  wg:
+    name: Setup wireguard
+    uses: ./.github/workflows/wg.yml
+    with:
+      client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
+      server_ip: ${{ vars.WIREGUARD_SERVER_IP }}
+      port: ${{ vars.WIREGUARD_PORT }}
+      allowed_ips: ${{ vars.WIREGUARD_ALLOWED_IPS }}
+      server_public_key: ${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}
+    secrets:
+      server_ip: ${{ secrets.SERVER_IP }}
+      private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
 
-      - name: Setup wireguard
-        uses: ./.github/workflows/wg.yml
-        with:
-          client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
-          server_ip: ${{ vars.WIREGUARD_SERVER_IP }}
-          port: ${{ vars.WIREGUARD_PORT }}
-          allowed_ips: ${{ vars.WIREGUARD_ALLOWED_IPS }}
-          server_public_key: ${{ vars.WIREGUARD_SERVER_PUBLIC_KEY }}
-        secrets:
-          server_ip: ${{ secrets.SERVER_IP }}
-          private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
-
+  push:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
       - name: Build Docker image
         run: |
           nix build -L --accept-flake-config .#container
