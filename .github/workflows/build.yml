@@ -18,6 +18,7 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
   wg:
+    needs: setup
     uses: ./.github/workflows/wg.yml
     with:
       client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
@@ -31,6 +32,7 @@ jobs:
       private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
 
   push:
+    needs: wg
     name: Build and push image
     runs-on: ubuntu-latest
     steps:
