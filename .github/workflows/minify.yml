@@ -25,7 +25,7 @@ jobs:
 
     - name: Minify JavaScript files
       run: |
-        uglifyjs web/script.js --compress dead_code,evaluate,booleans,loops,unused,hoist_funs,hoist_vars,if_return,join_vars,cascade --mangle -o web/script.min.js
+        uglifyjs web/script.js --compress dead_code,evaluate,booleans,loops,unused,hoist_funs,hoist_vars,if_return,join_vars --mangle -o web/script.min.js
 
     - name: Commit and push minified files
       run: |
