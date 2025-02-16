@@ -6,17 +6,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
-    name: Setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v8
-
-      - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
   wg:
     needs: setup
     uses: ./.github/workflows/wg.yml
@@ -32,10 +21,18 @@ jobs:
       private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
 
   push:
-    needs: [setup,wg]
+    needs: wg
     name: Build and push image
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v8
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
       - name: Build Docker image
         run: |
           nix build -L --accept-flake-config .#container
