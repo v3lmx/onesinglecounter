@@ -32,7 +32,7 @@ jobs:
       private_key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
 
   push:
-    needs: setup,wg
+    needs: [setup,wg]
     name: Build and push image
     runs-on: ubuntu-latest
     steps:
