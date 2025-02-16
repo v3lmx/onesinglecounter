@@ -7,7 +7,6 @@ on:
 
 jobs:
   wg:
-    needs: setup
     uses: ./.github/workflows/wg.yml
     with:
       client_ip: ${{ vars.WIREGUARD_CLIENT_IP }}
