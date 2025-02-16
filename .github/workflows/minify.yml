@@ -8,6 +8,8 @@ on:
 jobs:
   minify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
@@ -33,5 +35,5 @@ jobs:
         git commit -m "bot:minify js files"
         git push origin ${{ github.ref_name }}
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
