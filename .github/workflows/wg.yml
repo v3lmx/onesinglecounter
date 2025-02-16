@@ -29,6 +29,8 @@ on:
 
 jobs:
   setup:
+    name: Setup wireguard
+    runs-on: ubuntu-latest
     steps:
       - run: sudo apt install wireguard
       - run: echo "${{ secrets.private_key }}" > privatekey
