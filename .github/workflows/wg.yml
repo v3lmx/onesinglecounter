@@ -23,7 +23,7 @@ on:
       server_public_ip:
         required: true
       server_private_url:
-        requried: true
+        required: true
       private_key:
         required: true
 
