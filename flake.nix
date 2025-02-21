@@ -50,6 +50,8 @@
             go_1_23
             golangci-lint
 
+            uglify-js
+
             mprocs
             wgo
             websocat

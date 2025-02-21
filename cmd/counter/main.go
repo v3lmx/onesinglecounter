@@ -42,6 +42,6 @@ func main() {
 
 	api.HandleConnect(mux, events, clients)
 
-	log.Info("starting server on port 8000")
-	log.Fatal(http.ListenAndServe(":8000", checkCORS(mux)))
+	log.Info("starting server on port 10001")
+	log.Fatal(http.ListenAndServe(":10001", checkCORS(mux)))
 }
