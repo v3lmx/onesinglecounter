@@ -1,8 +1,8 @@
 name: build & deploy
 
 on:
-  # push:
-  #   branches: ['main', 'ci']
+  push:
+    branches: ['main', 'ci']
   workflow_dispatch:
 
 jobs:
@@ -85,12 +85,10 @@ jobs:
           chmod 600 ~/.ssh/id_bot
           ssh-keyscan ${{ vars.WIREGUARD_SERVER_IP }} >> ~/.ssh/known_hosts
 
-
-
       - name: Copy minified files
         run: |
-          rsync -avz ./script.min.js bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/script.min.js
-          rsync -avz ./web/index.html bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/counter/index.html
+          rsync -avz ./script.min.js bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
+          rsync -avz ./web/index.html bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
 
 
 
