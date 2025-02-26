@@ -85,6 +85,7 @@ jobs:
           chmod 600 ~/.ssh/id_bot
           ssh-keyscan ${{ vars.WIREGUARD_SERVER_IP }} >> ~/.ssh/known_hosts
 
+
       - name: Copy minified files
         run: |
           rsync -avz ./script.min.js bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
