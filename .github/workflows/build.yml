@@ -90,5 +90,11 @@ jobs:
           rsync -avz -e "ssh -i ~/.ssh/id_ci" ./script.min.js ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
           rsync -avz -e "ssh -i ~/.ssh/id_ci" ./web/index.html ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
 
+      - name: Deploy docker
+        run: |
+          docker stop ${{ IMAGE_NAME }}_${{ APP_ENV }}; exit 0
+          docker rm ${{ IMAGE_NAME }}_${{ APP_ENV }}; exit 0
+          docker run --name ${{ IMAGE_NAME }}_${{ APP_ENV }} -p${{ vars.APP_PORT }}:{{ vars.APP_PORT }} ${{ IMAGE_NAME }}_${{ APP_ENV }}
+
 
 
