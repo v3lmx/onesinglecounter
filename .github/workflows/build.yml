@@ -1,8 +1,8 @@
 name: build & deploy
 
 on:
-  push:
-    branches: ['main', 'ci']
+  # push:
+  #   branches: ['main', 'ci']
   workflow_dispatch:
 
 jobs:
