@@ -1,4 +1,3 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i sh -p git gnumake
+#!/bin/sh
 git pull
 make deploy
