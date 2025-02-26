@@ -36,7 +36,7 @@
         };
         container = pkgs.dockerTools.buildImage {
           name = "onesinglecounter";
-          tag = "latestt";
+          tag = "latest";
           copyToRoot = server;
           config = {
             Cmd = ["${server}/bin/counter"];
