@@ -90,10 +90,14 @@ jobs:
           rsync -avz -e "ssh -i ~/.ssh/id_ci" ./script.min.js ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
           rsync -avz -e "ssh -i ~/.ssh/id_ci" ./web/index.html ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
 
-      - name: Deploy docker
+      - name: stop older container docker
+        continue-on-error: true
         run: |
-          docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}; exit 0
-          docker rm ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}; exit 0
+          docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}
+          docker rm ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}
+
+      - name: run new container
+        run: |
           docker run --name ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }} -p${{ vars.APP_PORT }}:{{ vars.APP_PORT }} ${{ vars.IMAGE_NAME }}:latest
 
 
