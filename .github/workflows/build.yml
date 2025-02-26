@@ -81,14 +81,14 @@ jobs:
           SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_bot
-          chmod 600 ~/.ssh/id_bot
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ci
+          chmod 600 ~/.ssh/id_ci
           ssh-keyscan ${{ vars.WIREGUARD_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Copy minified files
         run: |
-          rsync -avz ./script.min.js bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
-          rsync -avz ./web/index.html bot@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
+          rsync -avz -e "ssh -i .ssh/id_ci" ./script.min.js ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
+          rsync -avz -e "ssh -i .ssh/id_ci" ./web/index.html ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
 
 
 
