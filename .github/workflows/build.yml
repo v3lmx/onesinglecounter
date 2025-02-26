@@ -92,9 +92,9 @@ jobs:
 
       - name: Deploy docker
         run: |
-          docker stop ${{ IMAGE_NAME }}_${{ APP_ENV }}; exit 0
-          docker rm ${{ IMAGE_NAME }}_${{ APP_ENV }}; exit 0
-          docker run --name ${{ IMAGE_NAME }}_${{ APP_ENV }} -p${{ vars.APP_PORT }}:{{ vars.APP_PORT }} ${{ IMAGE_NAME }}_${{ APP_ENV }}
+          docker stop ${{ vars.IMAGE_NAME }}_${{ APP_ENV }}; exit 0
+          docker rm ${{ vars.IMAGE_NAME }}_${{ APP_ENV }}; exit 0
+          docker run --name ${{ vars.IMAGE_NAME }}_${{ APP_ENV }} -p${{ vars.APP_PORT }}:{{ vars.APP_PORT }} ${{ vars.IMAGE_NAME }}_${{ APP_ENV }}
 
 
 
