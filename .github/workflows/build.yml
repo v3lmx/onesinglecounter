@@ -87,8 +87,8 @@ jobs:
 
       - name: Copy minified files
         run: |
-          rsync -avz -e "ssh -i .ssh/id_ci" ./script.min.js ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
-          rsync -avz -e "ssh -i .ssh/id_ci" ./web/index.html ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
+          rsync -avz -e "ssh -i ~/.ssh/id_ci" ./script.min.js ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/script.min.js
+          rsync -avz -e "ssh -i ~/.ssh/id_ci" ./web/index.html ci@${{ vars.WIREGUARD_SERVER_IP }}:/opt/osc/index.html
 
 
 
