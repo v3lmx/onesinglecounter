@@ -93,7 +93,7 @@ jobs:
       - name: stop older container docker
         continue-on-error: true
         run: |
-          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'HOME=/opt/osc/ docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
 
       - name: delete older container docker
         continue-on-error: true
