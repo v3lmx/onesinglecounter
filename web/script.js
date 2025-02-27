@@ -13,7 +13,8 @@ const messageIncrement = "inc"
 const messageCurrent = "current"
 const messageBest = "best"
 
-let ws = new WebSocket("ws://localhost:8000/connect")
+// let ws = new WebSocket("ws://localhost:8000/connect")
+let ws = new WebSocket("ws://private.v3lmx.com/osc/api/connect")
 ws.binaryType = 'arraybuffer';
 ws.onopen = (event) => {
     current()
