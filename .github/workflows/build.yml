@@ -93,22 +93,20 @@ jobs:
       - name: stop older container docker
         continue-on-error: true
         run: |
-          ssh ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker stop ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
 
       - name: delete older container docker
         continue-on-error: true
         run: |
-          ssh ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker rm ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker rm ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }}'
 
       - name: pull new container docker
-        continue-on-error: true
         run: |
-          ssh ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker pull ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker pull ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
 
       - name: run new container docker
-        continue-on-error: true
         run: |
-          ssh ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker run --name ${{ vars.IMAGE_NAME }}_${{ vars._ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'docker run --name ${{ vars.IMAGE_NAME }}_${{ vars._ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
           
 
           
