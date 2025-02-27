@@ -106,7 +106,7 @@ jobs:
 
       - name: run new container docker
         run: |
-          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'HOME=/opt/osc/ docker run --name ${{ vars.IMAGE_NAME }}_${{ vars._ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
+          ssh -i ~/.ssh/id_ci ci@${{ vars.WIREGUARD_SERVER_IP }} 'HOME=/opt/osc/ docker run -d --name ${{ vars.IMAGE_NAME }}_${{ vars._ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest'
           
 
           
