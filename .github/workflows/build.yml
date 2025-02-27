@@ -98,7 +98,8 @@ jobs:
 
       - name: run new container
         run: |
-          docker run --name ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.IMAGE_NAME }}:latest
+          docker pull ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest
+          docker run --name ${{ vars.IMAGE_NAME }}_${{ vars.APP_ENV }} -p${{ vars.APP_PORT }}:${{ vars.APP_PORT }} ${{ vars.LOCAL_REGISTRY }}/${{ vars.IMAGE_NAME }}:latest
 
 
 
