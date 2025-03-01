@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	// "syscall"
 
 	"github.com/charmbracelet/log"
 	"github.com/v3lmx/counter/internal/api"
@@ -23,7 +24,7 @@ func checkCORS(next http.Handler) http.Handler {
 
 func main() {
 	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
-		Level:           log.DebugLevel,
+		Level:           log.ErrorLevel,
 		ReportCaller:    true,
 		ReportTimestamp: true,
 	}))

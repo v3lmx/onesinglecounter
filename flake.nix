@@ -51,6 +51,9 @@
             golangci-lint
 
             uglify-js
+            nodejs
+            nodePackages.pnpm
+            caddy
 
             mprocs
             wgo
