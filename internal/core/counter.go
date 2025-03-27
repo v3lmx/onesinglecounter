@@ -103,6 +103,10 @@ func Game(commands <-chan Command, count *CountM, cond *Cond) {
 			// count.RUnlock()
 			// msg := MessageCurrent + ":" + strconv.Itoa(int(c))
 			// dispatchSingle(clients, event.ClientDest, msg)
+
+		// >>>>>>>>>>>>>>>>>>> TODO
+		// update best every minute with cron
+
 		// case CommandBest:
 		// 	requestBest <- struct{}{}
 		// 	currentBest := <-responseBest
