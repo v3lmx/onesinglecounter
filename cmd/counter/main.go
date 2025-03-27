@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"os"
+	"sync"
+
 	// "syscall"
 
 	"github.com/charmbracelet/log"
@@ -22,6 +24,8 @@ func checkCORS(next http.Handler) http.Handler {
 	})
 }
 
+var count = core.CountM{Count: 0}
+
 func main() {
 	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
 		Level:           log.ErrorLevel,
@@ -31,17 +35,16 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	events := make(chan core.Event)
-	clients := make(chan core.Client)
-	count := make(chan uint64)
-	requestBest := make(chan struct{})
-	responseBest := make(chan core.CurrentBest)
-	cronBest := make(chan core.CurrentBest)
+	commands := make(chan core.Command)
 
-	go core.Game(events, clients, count, requestBest, responseBest, cronBest)
-	go core.Best(count, requestBest, responseBest, cronBest)
+	var m sync.Mutex
+	cond := core.NewCond(&m)
 
-	api.HandleConnect(mux, events, clients)
+	go core.Game(commands, &count, &cond)
+	// go core.Game(events, clients, count, requestBest, responseBest, cronBest)
+	// go core.Best(count, requestBest, responseBest, cronBest)
+
+	api.HandleConnect(mux, commands, &count, &cond)
 
 	log.Info("starting server on port 10001")
 	log.Fatal(http.ListenAndServe(":10001", checkCORS(mux)))
