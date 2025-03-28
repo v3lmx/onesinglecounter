@@ -3,12 +3,14 @@ package core
 import (
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/log"
 	"github.com/robfig/cron/v3"
 )
 
 type CurrentBest struct {
+	sync.RWMutex
 	Minute  uint64
 	Hour    uint64
 	Day     uint64
@@ -18,7 +20,19 @@ type CurrentBest struct {
 	AllTime uint64
 }
 
-func (best CurrentBest) Format() string {
+func (b *CurrentBest) Copy() CurrentBest {
+	return CurrentBest{
+		AllTime: b.AllTime,
+		Year: b.Year,
+		Month: b.Month,
+		Week: b.Week,
+		Day: b.Day,
+		Hour: b.Hour,
+		Minute: b.Minute,
+	}
+}
+
+func (best *CurrentBest) Format() string {
 	var sb strings.Builder
 
 	sb.WriteString("alltime:")
@@ -43,7 +57,7 @@ func newBest() CurrentBest {
 	return CurrentBest{}
 }
 
-func Best(count <-chan uint64, request <-chan struct{}, response chan<- CurrentBest, broadcast chan<- CurrentBest) {
+func Best(count *CountM, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
 	nextMinute := make(chan struct{})
 	nextHour := make(chan struct{})
 	nextDay := make(chan struct{})
@@ -83,12 +97,27 @@ func Best(count <-chan uint64, request <-chan struct{}, response chan<- CurrentB
 
 	b := newBest()
 	for {
-		select {
-		// case <-backup:
-		// 	//backup
-		case <-request:
-			response <- b
-		case c := <-count:
+
+		// wait for next minute
+		// bestClock.L.Lock()
+		// bestClock.Wait()
+		//
+		// best.RLock()
+		// b := best.Copy()
+		// best.RUnlock()
+		//
+		// bestClock.L.Unlock()
+
+		// wait for tick to update count
+		tickClock.L.Lock()
+		tickClock.Wait()
+
+		count.RLock()
+		c := count.Count
+		count.RUnlock()
+
+		tickClock.L.Unlock()
+
 			lastCount = c
 			if c <= b.Minute {
 				continue
@@ -118,9 +147,10 @@ func Best(count <-chan uint64, request <-chan struct{}, response chan<- CurrentB
 				continue
 			}
 			b.AllTime = c
+
 		case <-nextMinute:
 			b.Minute = lastCount
-			broadcast <- b
+			bestClock.Broadcast()
 		case <-nextHour:
 			b.Hour = lastCount
 		case <-nextDay:

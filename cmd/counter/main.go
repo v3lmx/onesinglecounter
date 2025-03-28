@@ -25,6 +25,7 @@ func checkCORS(next http.Handler) http.Handler {
 }
 
 var count = core.CountM{Count: 0}
+var best = core.CurrentBest{}
 
 func main() {
 	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
@@ -37,14 +38,15 @@ func main() {
 
 	commands := make(chan core.Command)
 
-	var m sync.Mutex
-	cond := core.NewCond(&m)
+	var m1, m2 sync.Mutex
+	tickClock := core.NewCond(&m1)
+	bestClock := core.NewCond(&m2)
 
-	go core.Game(commands, &count, &cond)
+	go core.Game(commands, &count, &tickClock)
 	// go core.Game(events, clients, count, requestBest, responseBest, cronBest)
-	// go core.Best(count, requestBest, responseBest, cronBest)
+	go core.Best(&count, &best, &tickClock, &bestClock)
 
-	api.HandleConnect(mux, commands, &count, &cond)
+	api.HandleConnect(mux, commands, &count, &best, &tickClock, &bestClock)
 
 	log.Info("starting server on port 10001")
 	log.Fatal(http.ListenAndServe(":10001", checkCORS(mux)))
