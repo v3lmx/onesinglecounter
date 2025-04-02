@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/charmbracelet/log"
 	"github.com/robfig/cron/v3"
@@ -23,12 +24,12 @@ type CurrentBest struct {
 func (b *CurrentBest) Copy() CurrentBest {
 	return CurrentBest{
 		AllTime: b.AllTime,
-		Year: b.Year,
-		Month: b.Month,
-		Week: b.Week,
-		Day: b.Day,
-		Hour: b.Hour,
-		Minute: b.Minute,
+		Year:    b.Year,
+		Month:   b.Month,
+		Week:    b.Week,
+		Day:     b.Day,
+		Hour:    b.Hour,
+		Minute:  b.Minute,
 	}
 }
 
@@ -57,7 +58,7 @@ func newBest() CurrentBest {
 	return CurrentBest{}
 }
 
-func Best(count *CountM, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
+func Best(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
 	nextMinute := make(chan struct{})
 	nextHour := make(chan struct{})
 	nextDay := make(chan struct{})
@@ -65,7 +66,6 @@ func Best(count *CountM, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
 	nextMonth := make(chan struct{})
 	nextYear := make(chan struct{})
 	// backup := make(chan struct{})
-	lastCount := uint64(0)
 
 	c := cron.New()
 	_, err := c.AddFunc("* * * * *", func() { nextMinute <- struct{}{} })
@@ -112,55 +112,53 @@ func Best(count *CountM, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
 		tickClock.L.Lock()
 		tickClock.Wait()
 
-		count.RLock()
-		c := count.Count
-		count.RUnlock()
+		c := count.Load()
 
 		tickClock.L.Unlock()
 
-			lastCount = c
-			if c <= b.Minute {
-				continue
-			}
-			b.Minute = c
-			if c <= b.Hour {
-				continue
-			}
-			b.Hour = c
-			if c <= b.Day {
-				continue
-			}
-			b.Day = c
-			if c <= b.Week {
-				continue
-			}
-			b.Week = c
-			if c <= b.Month {
-				continue
-			}
-			b.Month = c
-			if c <= b.Year {
-				continue
-			}
-			b.Year = c
-			if c <= b.AllTime {
-				continue
-			}
-			b.AllTime = c
+		if c <= b.Minute {
+			continue
+		}
+		b.Minute = c
+		if c <= b.Hour {
+			continue
+		}
+		b.Hour = c
+		if c <= b.Day {
+			continue
+		}
+		b.Day = c
+		if c <= b.Week {
+			continue
+		}
+		b.Week = c
+		if c <= b.Month {
+			continue
+		}
+		b.Month = c
+		if c <= b.Year {
+			continue
+		}
+		b.Year = c
+		if c <= b.AllTime {
+			continue
+		}
+		b.AllTime = c
 
+		select {
 		case <-nextMinute:
-			b.Minute = lastCount
+			b.Minute = c
 			bestClock.Broadcast()
 		case <-nextHour:
-			b.Hour = lastCount
+			b.Hour = c
 		case <-nextDay:
-			b.Day = lastCount
+			b.Day = c
 		case <-nextWeek:
-			b.Week = lastCount
+			b.Week = c
 		case <-nextMonth:
-			b.Month = lastCount
+			b.Month = c
 		case <-nextYear:
-			b.Year = lastCount
+			b.Year = c
 		}
 		log.Debugf("current best: %s", b.Format())
 	}

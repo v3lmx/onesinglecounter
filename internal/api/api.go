@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"strconv"
-	"sync"
+	"sync/atomic"
 
 	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
+
 	"github.com/v3lmx/counter/internal/core"
 )
 
@@ -18,7 +20,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *core.CountM, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond) {
+func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Get /connect")
 
@@ -28,24 +30,39 @@ func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *core
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		defer conn.Close()
 
-		var wg sync.WaitGroup
+		ctx, cancel := context.WithCancel(context.Background())
 
-		go handleEvents(conn, commands, &wg)
-		go handleCount(conn, count, tickClock, &wg)
-		go handleBest(conn, best, bestClock, &wg)
+		msg := make(chan string)
 
-		// When either finishes, we have an error and we must cleanup
-		wg.Add(1)
-		wg.Wait()
+		go handleEvents(ctx, cancel, conn, commands)
+		go handleCount(ctx, cancel, msg, count, tickClock)
+		go handleBest(ctx, cancel, msg, best, bestClock)
 
-		log.Debug("end")
+		// Wait for any func to finish
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case m := <-msg:
+				err := conn.WriteMessage(websocket.TextMessage, []byte(m))
+				if err != nil {
+					log.Warnf("Error : %v", err)
+					return
+				}
+			}
+		}
 	})
 }
 
-func handleEvents(conn *websocket.Conn, commands chan<- core.Command, wg *sync.WaitGroup) {
-	defer wg.Done()
+func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocket.Conn, commands chan<- core.Command) {
+	defer cancel()
 	for {
+		if ctx.Err() != nil {
+			return
+		}
+
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			log.Errorf("Error : %v", err)
@@ -69,32 +86,34 @@ func handleEvents(conn *websocket.Conn, commands chan<- core.Command, wg *sync.W
 	}
 }
 
-func handleCount(conn *websocket.Conn, count *core.CountM, cond *core.Cond, wg *sync.WaitGroup) {
-	defer wg.Done()
+func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- string, count *atomic.Uint64, cond *core.Cond) {
+	defer cancel()
 	for {
+		if ctx.Err() != nil {
+			return
+		}
+
 		cond.L.Lock()
 		// wait for broadcast (tick)
 		// todo: maybe local tick ?? -> how to update it dynamically
 		//		\-> update tick every tick from RWlock value like count?
 		cond.Wait()
 
-		count.RLock()
-		c := count.Count
-		count.RUnlock()
+		c := count.Load()
 
 		cond.L.Unlock()
 
-		err := conn.WriteMessage(websocket.TextMessage, []byte("current:"+strconv.Itoa(int(c))))
-		if err != nil {
-			log.Errorf("Error : %v", err)
-			return
-		}
+		msg <- "current:" + strconv.Itoa(int(c))
 	}
 }
 
-func handleBest(conn *websocket.Conn, best *core.CurrentBest, cond *core.Cond, wg *sync.WaitGroup) {
-	defer wg.Done()
+func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- string, best *core.CurrentBest, cond *core.Cond) {
+	defer cancel()
 	for {
+		if ctx.Err() != nil {
+			return
+		}
+
 		cond.L.Lock()
 		cond.Wait()
 
@@ -111,10 +130,6 @@ func handleBest(conn *websocket.Conn, best *core.CurrentBest, cond *core.Cond, w
 
 		cond.L.Unlock()
 
-		err := conn.WriteMessage(websocket.TextMessage, []byte(b.Format()))
-		if err != nil {
-			log.Errorf("Error : %v", err)
-			return
-		}
+		msg <- b.Format()
 	}
 }

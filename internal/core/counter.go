@@ -2,6 +2,7 @@ package core
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -34,7 +35,7 @@ type CountM struct {
 	sync.RWMutex
 }
 
-func Game(commands <-chan Command, count *CountM, cond *Cond) {
+func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond) {
 	// func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest, cronBest <-chan CurrentBest) {
 	log.Debug("handle game")
 	// count := uint64(0)
@@ -52,7 +53,7 @@ func Game(commands <-chan Command, count *CountM, cond *Cond) {
 	// tickTime := make(chan time.Duration, 1)
 	// tickTime <- 5 * time.Millisecond
 	// t := time.NewTicker(1000 * time.Millisecond)
-	t := time.NewTicker(5 * time.Millisecond)
+	t := time.NewTicker(1 * time.Millisecond)
 	// >>> t.Reset(new_duration)
 
 	defer t.Stop()
@@ -89,13 +90,9 @@ func Game(commands <-chan Command, count *CountM, cond *Cond) {
 		// var msg Message
 		switch cmd {
 		case CommandReset:
-			count.Lock()
-			count.Count = 0
-			count.Unlock()
+			count.Store(0)
 		case CommandIncrement:
-			count.Lock()
-			count.Count++
-			count.Unlock()
+			count.Add(1)
 		case CommandCurrent:
 			log.Debug("would current")
 			// count.RLock()
