@@ -35,7 +35,7 @@ type CountM struct {
 	sync.RWMutex
 }
 
-func Game(commands <-chan Command, count *atomic.Uint64, cond *sync.Cond) {
+func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond) {
 	// func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest, cronBest <-chan CurrentBest) {
 	log.Debug("handle game")
 	// count := uint64(0)
@@ -53,7 +53,7 @@ func Game(commands <-chan Command, count *atomic.Uint64, cond *sync.Cond) {
 	// tickTime := make(chan time.Duration, 1)
 	// tickTime <- 5 * time.Millisecond
 	// t := time.NewTicker(1000 * time.Millisecond)
-	t := time.NewTicker(5 * time.Millisecond)
+	t := time.NewTicker(1 * time.Millisecond)
 	// >>> t.Reset(new_duration)
 
 	defer t.Stop()

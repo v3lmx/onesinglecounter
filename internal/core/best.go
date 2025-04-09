@@ -58,7 +58,7 @@ func newBest() CurrentBest {
 	return CurrentBest{}
 }
 
-func Best(count *atomic.Uint64, best *CurrentBest, tickClock *sync.Cond, bestClock *sync.Cond) {
+func Best(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
 	nextMinute := make(chan struct{})
 	nextHour := make(chan struct{})
 	nextDay := make(chan struct{})

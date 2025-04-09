@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"strconv"
-	"sync"
 	"sync/atomic"
 
 	"github.com/charmbracelet/log"
@@ -21,7 +20,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *sync.Cond, bestClock *sync.Cond) {
+func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Get /connect")
 
@@ -87,7 +86,7 @@ func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocke
 	}
 }
 
-func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- string, count *atomic.Uint64, cond *sync.Cond) {
+func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- string, count *atomic.Uint64, cond *core.Cond) {
 	defer cancel()
 	for {
 		if ctx.Err() != nil {
@@ -108,7 +107,7 @@ func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- stri
 	}
 }
 
-func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- string, best *core.CurrentBest, cond *sync.Cond) {
+func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- string, best *core.CurrentBest, cond *core.Cond) {
 	defer cancel()
 	for {
 		if ctx.Err() != nil {
