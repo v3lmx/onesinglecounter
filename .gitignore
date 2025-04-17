@@ -1,3 +1,4 @@
 .direnv
 vendor/
-build
+ansible/wireguard/secrets/*
+ansible/inventory.yml
