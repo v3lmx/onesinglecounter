@@ -1,0 +1,88 @@
+- name: ssh hardening 
+  hosts: all
+  become: true
+  tags: 
+    - hardening
+    - ssh
+  roles:
+    - name: devsec.hardening.ssh_hardening
+  vars:
+    ssh_server_ports:
+      - 41022
+
+- name: os hardening 
+  hosts: all
+  become: true
+  tags: 
+    - hardening
+    - os
+  roles:
+    - devsec.hardening.os_hardening
+  vars:
+    sysctl_overwrite:
+      # Enable IPv4 traffic forwarding
+      # Needed for docker and wireguard
+      net.ipv4.ip_forward: 1
+
+- name: sudoers management
+  hosts: all
+  become: true
+  tags: 
+    - hardening
+    - sudo
+  tasks:
+    - name: ubuntu_sudo
+      community.general.sudoers:
+        name: ubuntu_sudo
+        state: present
+        user: ubuntu
+        runas: ALL
+        commands: ALL
+        nopassword: false
+
+- name: firewall
+  hosts: all
+  become: true
+  tags:
+    - hardening
+    - firewall
+  tasks:
+    - name: enable firewall
+      community.general.ufw:
+        state: enabled
+        policy: deny
+
+    - name: Set logging
+      community.general.ufw:
+        logging: 'on'
+
+    # connection rate limiting (6 conn per 30 secs)
+    - community.general.ufw:
+        rule: limit
+        port: '41022'
+        proto: tcp
+
+    # Allow OpenSSH. (Note that as ufw manages its own state, simply removing
+    # a rule=allow task can leave those ports exposed. Either use delete=true
+    # or a separate state=reset task)
+    - community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Allow 443
+      community.general.ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
+
+    - name: Allow 41022 # ssh
+      community.general.ufw:
+        rule: allow
+        port: '41022'
+        proto: tcp
+
+    - name: Allow 51820 # wireguard
+      community.general.ufw:
+        rule: allow
+        port: '51820'
+        proto: udp

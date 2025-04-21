@@ -3,7 +3,8 @@ package main
 import (
 	"net/http"
 	"os"
-	// "syscall"
+	"sync"
+	"sync/atomic"
 
 	"github.com/charmbracelet/log"
 	"github.com/v3lmx/counter/internal/api"
@@ -22,6 +23,10 @@ func checkCORS(next http.Handler) http.Handler {
 	})
 }
 
+// var count = core.CountM{Count: 0}
+var count atomic.Uint64
+var best = core.CurrentBest{}
+
 func main() {
 	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
 		Level:           log.ErrorLevel,
@@ -30,19 +35,19 @@ func main() {
 	}))
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	commands := make(chan core.Command)
 
-	events := make(chan core.Event)
-	clients := make(chan core.Client)
-	count := make(chan uint64)
-	requestBest := make(chan struct{})
-	responseBest := make(chan core.CurrentBest)
-	cronBest := make(chan core.CurrentBest)
+	var m1, m2 sync.Mutex
+	tickClock := core.NewCond(&m1)
+	bestClock := core.NewCond(&m2)
 
-	go core.Game(events, clients, count, requestBest, responseBest, cronBest)
-	go core.Best(count, requestBest, responseBest, cronBest)
+	go core.Game(commands, &count, &tickClock)
+	// go core.Game(events, clients, count, requestBest, responseBest, cronBest)
+	go core.Best(&count, &best, &tickClock, &bestClock)
 
-	api.HandleConnect(mux, events, clients)
+	api.HandleConnect(mux, commands, &count, &best, &tickClock, &bestClock)
 
 	log.Info("starting server on port 10001")
-	log.Fatal(http.ListenAndServe(":10001", checkCORS(mux)))
+	log.Error(http.ListenAndServe(":10001", checkCORS(mux)))
 }

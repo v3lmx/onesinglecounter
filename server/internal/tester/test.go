@@ -38,7 +38,7 @@ func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 		}
 	}()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Millisecond * 50)
 	defer ticker.Stop()
 
 	for {

@@ -1,0 +1,100 @@
+---
+- name: Set up Docker on VPS
+  hosts: all
+  become: yes
+  tags:
+    - setup
+    - docker
+    - never
+  vars:
+    docker_users:
+      - yourusername
+    venv_path: /opt/docker_venv
+    docker_compose_version: "v2.35.0"
+
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-venv
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is running and enabled
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add users to docker group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        groups: docker
+        append: yes
+      loop: "{{ docker_users }}"
+
+    - name: Configure Docker daemon
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            },
+            "data-root": "/var/lib/docker"
+          }
+      notify: Restart Docker
+
+    - name: Create virtual environment for Docker Python module
+      ansible.builtin.command: python3 -m venv {{ venv_path }}
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: Install Docker Python module in virtual environment
+      ansible.builtin.pip:
+        name: docker
+        state: present
+        virtualenv: "{{ venv_path }}"
+
+    - name: Download Docker Compose
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create symlink for Docker Compose
+      ansible.builtin.file:
+        src: /usr/local/bin/docker-compose
+        dest: /usr/bin/docker-compose
+        state: link
+
+  handlers:
+    - name: Restart Docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+

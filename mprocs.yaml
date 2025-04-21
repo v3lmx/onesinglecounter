@@ -1,5 +1,7 @@
 procs:
   server:
+    cwd: "server"
     shell: "wgo run ./cmd/counter"
-  browser:
-    shell: "falkon"
+  web:
+    cwd: "web-svelte"
+    shell: "pnpm run dev"

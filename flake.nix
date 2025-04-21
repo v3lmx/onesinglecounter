@@ -2,7 +2,7 @@
   description = "osc";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     utils.url = "github:numtide/flake-utils";
   };
 
@@ -17,33 +17,6 @@
         inherit system;
       };
     in {
-      packages = rec {
-        default = server;
-        server = pkgs.buildGoModule {
-          # will be the package run
-          pname = "counter";
-          version = "0.0.1";
-          src = ./.;
-          vendorHash = "sha256-2NsSRaFiFu7ZKl/OS07s0RK+094sIRyuuYXZzOQFsIs=";
-          proxyVendor = true;
-
-          meta = {
-            description = "osc server";
-            homepage = "https://github.com/v3lmx/onesinglecounter";
-            license = pkgs.lib.licenses.gpl3Plus;
-            maintainers = with pkgs.lib.maintainers; [v3lmx];
-          };
-        };
-        container = pkgs.dockerTools.buildImage {
-          name = "onesinglecounter";
-          tag = "latest";
-          copyToRoot = server;
-          config = {
-            Cmd = ["${server}/bin/counter"];
-          };
-        };
-      };
-
       devShells = {
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
@@ -58,8 +31,22 @@
             mprocs
             wgo
             websocat
-            falkon
+
+            ansible
+            # kamal
+            ruby
           ];
+
+          # add kamal to path
+          shellHook = ''
+              export PATH="$PATH:$HOME/.local/share/gem/ruby/3.3.0/bin"
+              alias ag="ansible-galaxy"
+              alias ap="ansible-playbook"
+            #   command -v kamal
+            #   if [ $? -eq 0 ]; then
+            #       gem install kamal
+            #   fi
+          '';
         };
       };
 
