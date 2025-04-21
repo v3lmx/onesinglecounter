@@ -33,19 +33,13 @@
             websocat
 
             ansible
-            # kamal
-            ruby
           ];
 
           # add kamal to path
           shellHook = ''
-              export PATH="$PATH:$HOME/.local/share/gem/ruby/3.3.0/bin"
-              alias ag="ansible-galaxy"
-              alias ap="ansible-playbook"
-            #   command -v kamal
-            #   if [ $? -eq 0 ]; then
-            #       gem install kamal
-            #   fi
+            export PATH="$PATH:$HOME/.local/share/gem/ruby/3.3.0/bin"
+            alias ag="ansible-galaxy"
+            alias ap="ansible-playbook"
           '';
         };
       };

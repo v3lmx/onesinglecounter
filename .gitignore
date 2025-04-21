@@ -2,3 +2,4 @@
 vendor/
 ansible/wireguard/secrets/*
 ansible/inventory.yml
+dist/
