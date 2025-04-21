@@ -30,14 +30,17 @@ jobs:
 
       - name: Install Node.js
         uses: actions/setup-node@v4
+        working-directory: web-svelte
         with:
           node-version: 20
           cache: 'pnpm'
 
       - name: Install dependencies
+        working-directory: web-svelte
         run: pnpm install
 
       - name: Build Svelte app
+        working-directory: web-svelte
         run: pnpm run build
 
       - name: Set up Docker Buildx
