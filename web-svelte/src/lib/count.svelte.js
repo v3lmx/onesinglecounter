@@ -26,7 +26,10 @@ for (const time of timespansList) {
     best.set(time, 0);
 }
 
-const ws = new WebSocket("ws://localhost:10001/connect");
+console.log(import.meta.env.VITE_WS_URL)
+const wsUrl = import.meta.env.VITE_WS_URL + '/connect' || "ws://localhost:9000/connect";
+const ws = new WebSocket(wsUrl);
+
 ws.binaryType = "arraybuffer";
 
 export function reset() {

@@ -1,0 +1,24 @@
+services:
+  server:
+    image: ghcr.io/v3lmx/osc_server_staging:latest
+    container_name: "server_staging"
+    networks:
+      - "app_network_staging"
+
+  web:
+    image: ghcr.io/v3lmx/osc_web_staging:latest
+    container_name: "web_staging"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - "app_network_staging"
+    command: caddy file-server --root /srv --access-log
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks: 
+  app_network_staging: 
+    external: true
