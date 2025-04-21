@@ -30,8 +30,8 @@ jobs:
 
       - name: Install Node.js
         uses: actions/setup-node@v4
-        working-directory: web-svelte
         with:
+          cache-dependency-path: web-svelte/pnpm-lock.yaml
           node-version: 20
           cache: 'pnpm'
 

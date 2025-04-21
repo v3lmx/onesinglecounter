@@ -28,7 +28,6 @@ jobs:
         working-directory: server
         run: CGO_ENABLED=0 GOOS=linux go build -v -o counter cmd/counter/main.go
       
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
