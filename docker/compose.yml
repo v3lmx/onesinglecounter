@@ -1,0 +1,19 @@
+services:
+  server:
+    image: ghcr.io/v3lmx/osc_server:latest
+    ports: 
+      - "10001:9000"
+
+  web:
+    image: ghcr.io/v3lmx/osc_web:latest
+    ports:
+      - "10443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    command: caddy file-server --root /srv --domain osc.v3lmx.com
+
+volumes:
+  caddy_data:
+  caddy_config:
+
