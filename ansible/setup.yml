@@ -8,7 +8,7 @@
     - never
   vars:
     docker_users:
-      - yourusername
+      - ubuntu
     venv_path: /opt/docker_venv
     docker_compose_version: "v2.35.0"
 

@@ -33,6 +33,7 @@
             websocat
 
             ansible
+            xcaddy
           ];
 
           # add kamal to path

@@ -40,6 +40,6 @@ jobs:
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
             # change url dep on env
-            curl -o docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker-compose-staging.yml
+            curl -o docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker-compose-${{ env.ENV }}.yml
             docker-compose pull
             docker-compose up -d

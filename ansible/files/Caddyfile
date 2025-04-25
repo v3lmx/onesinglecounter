@@ -1,0 +1,43 @@
+test.v3lmx.com {
+    log {
+        output file /var/log/caddy/staging.log
+    }
+
+    import /etc/caddy/cloudflare.Caddyfile
+
+    # if not wireguard address: deny
+    @denied not remote_ip 10.10.100.0/24
+    handle @denied {
+        respond 401
+    }
+
+    handle_path /up {
+        respond 200
+    }
+
+    # each site deploys its caddy config
+    # in this directory
+    import /etc/caddy/sites/staging/*
+
+    respond 401
+}
+
+v3lmx.com {
+    log {
+        output file /var/log/caddy/prod.log
+    }
+
+    import /etc/caddy/cloudflare.Caddyfile
+
+    handle_path /up {
+        respond 200
+    }
+
+    # each site deploys its caddy config
+    # in this directory
+    import /etc/caddy/sites/prod/*
+
+    respond 404
+}
+
+
