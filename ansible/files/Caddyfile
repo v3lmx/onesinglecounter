@@ -12,7 +12,7 @@ test.v3lmx.com {
     }
 
     handle_path /up {
-        respond 200
+        respond "ok" 200
     }
 
     # each site deploys its caddy config
@@ -30,7 +30,7 @@ v3lmx.com {
     import /etc/caddy/cloudflare.Caddyfile
 
     handle_path /up {
-        respond 200
+        respond "ok" 200
     }
 
     # each site deploys its caddy config

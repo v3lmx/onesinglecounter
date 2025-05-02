@@ -1,45 +1,29 @@
 name: Deploy osc to VPS
 
 on:
-  tag:
-
+  push:
+    branches:
+      - main
+      - cicd
+  # tags:
+  #   - "[0-9].[0-9]+.[0-9]+"
+  #   - "test.[0-9].[0-9]+.[0-9]+"
+  
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Determine environment and tag
-        id: determine_env
-        run: |
-          if [[ "${{ github.ref }}" =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
-            echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+-rc$ ]]; then
-            echo "ENV=staging" >> $GITHUB_ENV
-            echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-          else
-            echo "Invalid tag format"
-            exit 1
-          fi
-
       - name: deploy with ssh
+        environment: staging
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            if [ "${{ env.ENV }}" = "prod" ]; then
-              DEPLOY_PATH="$HOME/prod"
-            elif [ "${{ env.ENV }}" = "staging" ]; then
-              DEPLOY_PATH="$HOME/staging"
-            else
-              echo "Invalid environment"
-              exit 1
-            fi
-            mkdir -p $DEPLOY_PATH
-            cd $DEPLOY_PATH
-            # change url dep on env
-            curl -o docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker-compose-${{ env.ENV }}.yml
+            mkdir -p $HOME/staging
+            cd $HOME/staging
+            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/compose-staging.yml
             docker-compose pull
             docker-compose up -d

@@ -2,7 +2,8 @@
 - name: Build Caddy locally
   hosts: localhost
   become: no
-  tags: build
+  tags: 
+    - build
   vars:
     xcaddy_version: 0.4.4
     xcaddy_url: "https://github.com/caddyserver/xcaddy/releases/download/v{{ xcaddy_version }}/xcaddy_{{ xcaddy_version }}_linux_amd64.tar.gz"
@@ -33,6 +34,8 @@
 - name: Deploy Caddy using Docker
   hosts: all
   become: yes
+  tags:
+    - deploy
   vars:
     exec_path: /usr/local/bin
     caddy_image: "caddy:2.10-alpine"
