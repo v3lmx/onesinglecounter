@@ -13,7 +13,6 @@ jobs:
     uses: ./.github/workflows/server.yml
     with: 
       image_name: osc_server_${{ inputs.deploy_env }}
-      deploy_env: ${{ inputs.deploy_env }}
     permissions:
       contents: read
       packages: write
