@@ -1,19 +1,19 @@
 name: deploy
 
 on:
-  push:
-    branches: 
-      - main
-      - cicd
-  # tags:
-  #   - "[0-9].[0-9]+.[0-9]+"
-  #   - "test.[0-9].[0-9]+.[0-9]+"
-  
-jobs:
+  workflow_call:
+    inputs:
+      deploy_env:
+        description: 'deployment environment (staging/prod)'
+        required: true
+        type: string
+
+name: deploy {{ inputs.deploy_env }}
   server:
     uses: ./.github/workflows/server.yml
     with: 
-      image_name: osc_server
+      image_name: osc_server_{{ inputs.deploy_env }}
+      deploy_env: {{ inputs.deploy_env }}
     permissions:
       contents: read
       packages: write
@@ -23,7 +23,8 @@ jobs:
   web:
     uses: ./.github/workflows/web.yml
     with: 
-      image_name: osc_web
+      image_name: osc_web_{{ inputs.deploy_env }}
+      deploy_env: {{ inputs.deploy_env }}
     permissions:
       contents: read
       packages: write
@@ -33,7 +34,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [server, web]
-    environment: staging
+    environment: {{ inputs.deploy_env }}
     steps:
       - name: deploy with ssh
         uses: appleboy/ssh-action@v1.2.2
@@ -43,8 +44,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE }}
           port: ${{ secrets.SSH_PORT }} 
           script: |
-            mkdir -p $HOME/staging
-            cd $HOME/staging
-            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-staging.yml
+            mkdir -p $HOME/{{ inputs.deploy_env }}
+            cd $HOME/{{ inputs.deploy_env }}
+            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-{{ inputs.deploy_env }}.yml
             docker-compose pull
             docker-compose up -d --force-recreate

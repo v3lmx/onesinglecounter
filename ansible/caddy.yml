@@ -46,7 +46,6 @@
     caddy_sites_prod_path: /etc/caddy/sites/prod
     caddy_data_path: /etc/caddy/data
     caddy_config_path: /etc/caddy/config
-    docker_network: app_network
 
   tasks:
     - name: Copy Caddy executable to remote server
@@ -81,8 +80,11 @@
 
     - name: Create Docker network
       docker_network:
-        name: "{{ docker_network }}"
+        name: "{{ item }}"
         state: present
+      loop:
+        - "app_network_staging"
+        - "app_network_prod"
 
     - name: Pull Caddy Docker image
       docker_image:
@@ -105,7 +107,8 @@
           - "{{ caddy_config_path }}:/config"
           - "{{ exec_path }}/caddy:/usr/bin/caddy"
         networks:
-          - name: "{{ docker_network }}"
+          - name: "app_network_staging"
+          - name: "app_network_prod"
         restart_policy: always
 
     - name: Reload Caddy configuration

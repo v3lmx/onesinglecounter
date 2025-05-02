@@ -1,20 +1,16 @@
 services:
   server:
     image: ghcr.io/v3lmx/osc_server:latest
-    ports: 
-      - "11001:9000"
     networks:
-      - "app_network"
+      - "app_network_staging"
 
   web:
     image: ghcr.io/v3lmx/osc_web:latest
-    ports:
-      - "11443:80"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
     networks:
-      - "app_network"
+      - "app_network_staging"
     command: caddy file-server --root /srv --access-log
 
 volumes:
@@ -22,5 +18,5 @@ volumes:
   caddy_config:
 
 networks: 
-  app_network: 
+  app_network_staging: 
     external: true

@@ -1,4 +1,4 @@
-name: Reusable Web Workflow
+name: web
 
 on:
   workflow_call:

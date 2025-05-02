@@ -26,7 +26,9 @@ for (const time of timespansList) {
     best.set(time, 0);
 }
 
-const ws = new WebSocket("ws://localhost:10001/connect");
+const wsUrl = process.env.WEBSOCKET_URL || "ws://localhost:9000/connect";
+const ws = new WebSocket(wsUrl);
+
 ws.binaryType = "arraybuffer";
 
 export function reset() {

@@ -13,17 +13,11 @@ import (
 
 func checkCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// origin := r.Header.Get("Origin")
-		// if slices.Contains(originAllowlist, origin) {
-		// 	w.Header().Set("Access-Control-Allow-Origin", origin)
-		// 	w.Header().Add("Vary", "Origin")
-		// }
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "Same-Origin")
 		next.ServeHTTP(w, r)
 	})
 }
 
-// var count = core.CountM{Count: 0}
 var count atomic.Uint64
 var best = core.CurrentBest{}
 
@@ -43,11 +37,10 @@ func main() {
 	bestClock := core.NewCond(&m2)
 
 	go core.Game(commands, &count, &tickClock)
-	// go core.Game(events, clients, count, requestBest, responseBest, cronBest)
 	go core.Best(&count, &best, &tickClock, &bestClock)
 
 	api.HandleConnect(mux, commands, &count, &best, &tickClock, &bestClock)
 
-	log.Info("starting server on port 10001")
-	log.Error(http.ListenAndServe(":10001", checkCORS(mux)))
+	log.Info("starting server on port 9000")
+	log.Error(http.ListenAndServe(":9000", checkCORS(mux)))
 }
