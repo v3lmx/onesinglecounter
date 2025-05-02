@@ -8,8 +8,8 @@ on:
         required: true
         type: string
 
-name: deploy {{ inputs.deploy_env }}
-  server:
+jobs: 
+  build_server:
     uses: ./.github/workflows/server.yml
     with: 
       image_name: osc_server_{{ inputs.deploy_env }}
@@ -20,7 +20,7 @@ name: deploy {{ inputs.deploy_env }}
       attestations: write
       id-token: write
 
-  web:
+  build_web:
     uses: ./.github/workflows/web.yml
     with: 
       image_name: osc_web_{{ inputs.deploy_env }}
