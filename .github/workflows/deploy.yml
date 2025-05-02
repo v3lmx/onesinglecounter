@@ -18,9 +18,9 @@ jobs:
       - name: deploy with ssh
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          host: ${{ secrets.SERVER_IP }}
+          username: bot
+          key: ${{ secrets.SSH_PRIVATE }}
           script: |
             mkdir -p $HOME/staging
             cd $HOME/staging
