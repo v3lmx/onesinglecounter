@@ -33,7 +33,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build_server, build_web]
-    environment: ${{ inputs.deploy_env }}
+    # environment: ${{ inputs.deploy_env }}
     steps:
       - name: deploy with ssh
         uses: appleboy/ssh-action@v1.2.2
