@@ -27,4 +27,4 @@ jobs:
             cd $HOME/staging
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-staging.yml
             docker-compose pull
-            docker-compose up -d
+            docker-compose up -d --force-recreate
