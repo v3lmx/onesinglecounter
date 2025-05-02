@@ -7,11 +7,11 @@ services:
   web:
     image: ghcr.io/v3lmx/osc_web:latest
     ports:
-      - "11443:443"
+      - "11443:80"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-    command: caddy file-server --root /srv --domain osc.v3lmx.com
+    command: caddy file-server --root /srv --access-log
 
 volumes:
   caddy_data:
