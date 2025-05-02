@@ -1,11 +1,20 @@
-name: server build & push
+name: server
+
 on:
-  push:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      image_name:
+        description: 'Name of the Docker image'
+        required: true
+        type: string
+      go_version:
+        description: 'Version of Go to use'
+        required: false
+        type: string
+        default: '1.24.x'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: osc_server
 
 jobs:
   build_and_push:
@@ -21,13 +30,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          # Semantic version range syntax or exact version of Go
-          go-version: '1.24.x'
-      
+          go-version: ${{ inputs.go_version }}
+
       - name: Build
         working-directory: server
         run: CGO_ENABLED=0 GOOS=linux go build -v -o counter cmd/counter/main.go
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -45,11 +53,12 @@ jobs:
           context: .
           file: ./docker/server/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/v3lmx/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/v3lmx/${{ inputs.image_name }}:latest
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ${{ env.REGISTRY }}/v3lmx/${{ env.IMAGE_NAME }}
+          subject-name: ${{ env.REGISTRY }}/v3lmx/${{ inputs.image_name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+

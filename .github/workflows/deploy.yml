@@ -1,19 +1,31 @@
-name: Deploy osc to VPS
+name: deploy
 
 on:
   push:
-    branches:
+    branches: 
       - main
       - cicd
+    types: 
+      - completed
   # tags:
   #   - "[0-9].[0-9]+.[0-9]+"
   #   - "test.[0-9].[0-9]+.[0-9]+"
   
 jobs:
+  server:
+    uses: ./.github/workflows/server.yml
+    with: 
+      image_name: osc_server
+
+  web:
+    uses: ./.github/workflows/web.yml
+    with: 
+      image_name: osc_web
+
   deploy:
     runs-on: ubuntu-latest
+    needs: [server, web]
     environment: staging
-
     steps:
       - name: deploy with ssh
         uses: appleboy/ssh-action@v1.2.2

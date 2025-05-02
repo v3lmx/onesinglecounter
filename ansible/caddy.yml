@@ -81,7 +81,7 @@
 
     - name: Create Docker network
       docker_network:
-        name: "{{ docker_network_name }}"
+        name: "{{ docker_network }}"
         state: present
 
     - name: Pull Caddy Docker image

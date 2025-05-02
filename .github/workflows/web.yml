@@ -1,15 +1,25 @@
-name: Build and Deploy Svelte App
+name: Reusable Web Workflow
 
 on:
-  push:
-    branches:
-      - main
-      - cicd
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      image_name:
+        description: 'Name of the Docker image'
+        required: true
+        type: string
+      node_version:
+        description: 'Version of Node.js to use'
+        required: false
+        type: string
+        default: '20'
+      pnpm_version:
+        description: 'Version of pnpm to use'
+        required: false
+        type: string
+        default: '10'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: osc_web
 
 jobs:
   build:
@@ -25,14 +35,14 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-          version: 10
+          version: ${{ inputs.pnpm_version }}
           run_install: false
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           cache-dependency-path: web-svelte/pnpm-lock.yaml
-          node-version: 20
+          node-version: ${{ inputs.node_version }}
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -60,11 +70,12 @@ jobs:
           context: .
           file: ./docker/web/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/v3lmx/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/v3lmx/${{ inputs.image_name }}:latest
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ${{ env.REGISTRY }}/v3lmx/${{ env.IMAGE_NAME }}
+          subject-name: ${{ env.REGISTRY }}/v3lmx/${{ inputs.image_name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
