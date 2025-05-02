@@ -24,4 +24,3 @@ jobs:
       packages: write
       attestations: write
       id-token: write
-    environment: staging
