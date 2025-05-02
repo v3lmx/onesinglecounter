@@ -12,7 +12,6 @@ on:
 jobs:
   deploy:
     uses: ./.github/workflows/deploy.yml
-    environment: staging
     with: 
       deploy_env: staging
     permissions:
