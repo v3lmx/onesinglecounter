@@ -46,6 +46,7 @@
     caddy_sites_prod_path: /etc/caddy/sites/prod
     caddy_data_path: /etc/caddy/data
     caddy_config_path: /etc/caddy/config
+    docker_network: app_network
 
   tasks:
     - name: Copy Caddy executable to remote server
@@ -78,6 +79,11 @@
         dest: "/etc/caddy/cloudflare.Caddyfile"
         force: true
 
+    - name: Create Docker network
+      docker_network:
+        name: "{{ docker_network_name }}"
+        state: present
+
     - name: Pull Caddy Docker image
       docker_image:
         name: "{{ caddy_image }}"
@@ -98,6 +104,8 @@
           - "{{ caddy_data_path }}:/data"
           - "{{ caddy_config_path }}:/config"
           - "{{ exec_path }}/caddy:/usr/bin/caddy"
+        networks:
+          - name: "{{ docker_network }}"
         restart_policy: always
 
     - name: Reload Caddy configuration
