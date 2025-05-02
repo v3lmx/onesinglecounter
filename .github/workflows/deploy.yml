@@ -25,6 +25,6 @@ jobs:
           script: |
             mkdir -p $HOME/staging
             cd $HOME/staging
-            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/compose-staging.yml
+            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref }}/compose-staging.yml
             docker-compose pull
             docker-compose up -d
