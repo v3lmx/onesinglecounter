@@ -21,3 +21,6 @@ volumes:
   caddy_data:
   caddy_config:
 
+networks: 
+  app_network: 
+      external: true
