@@ -2,21 +2,22 @@ name: deploy
 
 on:
   workflow_call:
+    secrets:
+      server_ip:
+        description: 'ip of the server to deploy to'
+        required: true
+        type: string
+      ssh_key:
+        description: 'ssh key to login'
+        required: true
+        type: string
+      ssh_user:
+        required: true
+        type: string
+      ssh_port:
+        required: true
+        type: string
     inputs:
-      # server_ip:
-      #   description: 'ip of the server to deploy to'
-      #   required: true
-      #   type: string
-      # ssh_key:
-      #   description: 'ssh key to login'
-      #   required: true
-      #   type: string
-      # ssh_user:
-      #   required: true
-      #   type: string
-      # ssh_port:
-      #   required: true
-      #   type: string
       deploy_env:
         description: 'deployment environment (staging/prod)'
         required: true
