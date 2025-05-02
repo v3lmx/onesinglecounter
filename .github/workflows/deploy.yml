@@ -21,6 +21,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: bot
           key: ${{ secrets.SSH_PRIVATE }}
+          port: ${{ secrets.SSH_PORT }} 
           script: |
             mkdir -p $HOME/staging
             cd $HOME/staging
