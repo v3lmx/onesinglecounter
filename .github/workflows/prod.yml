@@ -10,6 +10,10 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with: 
       deploy_env: prod
+      server_ip: ${{ secrets.SERVER_IP }}
+      ssh_key: ${{ secrets.SSH_PRIVATE }}
+      ssh_user: ${{ secrets.SSH_USER }}
+      ssh_port: ${{ secrets.SSH_PORT }}
     permissions:
       contents: read
       packages: write
