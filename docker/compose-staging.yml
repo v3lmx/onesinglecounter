@@ -1,11 +1,13 @@
 services:
   server:
     image: ghcr.io/v3lmx/osc_server:latest
+    container_name: "server_staging"
     networks:
       - "app_network_staging"
 
   web:
     image: ghcr.io/v3lmx/osc_web:latest
+    container_name: "web_staging"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
