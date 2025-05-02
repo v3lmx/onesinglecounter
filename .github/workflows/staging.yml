@@ -14,6 +14,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with: 
       deploy_env: staging
+    secrets:
       server_ip: ${{ secrets.SERVER_IP }}
       ssh_key: ${{ secrets.SSH_PRIVATE }}
       ssh_user: ${{ secrets.SSH_USER }}
@@ -23,3 +24,4 @@ jobs:
       packages: write
       attestations: write
       id-token: write
+    environment: staging
