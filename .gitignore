@@ -3,3 +3,4 @@ vendor/
 ansible/secrets/*
 ansible/inventory.yml
 dist/
+server/*.bak

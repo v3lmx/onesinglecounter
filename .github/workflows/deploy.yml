@@ -18,6 +18,14 @@ on:
         description: 'deployment environment (staging/prod)'
         required: true
         type: string
+      backup_best:
+        description: 'backup file for best'
+        required: true
+        type: string
+      backup_current:
+        description: 'backup file for current'
+        required: true
+        type: string
 
 jobs: 
   build_server:
@@ -55,11 +63,15 @@ jobs:
           key: ${{ secrets.ssh_key }}
           port: ${{ secrets.ssh_port }} 
           script: |
-            mkdir -p $HOME/${{ inputs.deploy_env }}
-            cd $HOME/${{ inputs.deploy_env }}
-            cp compose.yml old_compose.yml
+            mkdir -p $HOME/osc/${{ inputs.deploy_env }}
+            cd $HOME/osc/${{ inputs.deploy_env }}
+            mv compose.yml old_compose.yml
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
             docker-compose pull
             docker-compose down -f old_compose.yml
-            docker-compose up -d --force-recreate --remove-orphans
-            rm old_compose.yml
+            mkdir -p "$(dirname "${{ inputs.backup_best }}")" && touch "${{ inputs.backup_best }}"
+            mkdir -p "$(dirname "${{ inputs.backup_current }}")" && touch "${{ inputs.backup_current }}"
+            echo "BACKUP_BEST_PATH=${{ inputs.backup_best }}" > .env
+            echo "BACKUP_CURRENT_PATH=${{ inputs.backup_current }}" >> .env
+            docker-compose --env-file .env up -d --force-recreate --remove-orphans
+            rm -f old_compose.yml

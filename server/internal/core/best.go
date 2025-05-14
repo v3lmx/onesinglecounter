@@ -1,10 +1,12 @@
 package core
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/robfig/cron/v3"
@@ -12,6 +14,10 @@ import (
 
 type CurrentBest struct {
 	sync.RWMutex
+	Best Best
+}
+
+type Best struct {
 	Minute  uint64
 	Hour    uint64
 	Day     uint64
@@ -21,19 +27,82 @@ type CurrentBest struct {
 	AllTime uint64
 }
 
-func (b *CurrentBest) Copy() CurrentBest {
-	return CurrentBest{
-		AllTime: b.AllTime,
-		Year:    b.Year,
-		Month:   b.Month,
-		Week:    b.Week,
-		Day:     b.Day,
-		Hour:    b.Hour,
-		Minute:  b.Minute,
+func (b *CurrentBest) Copy() Best {
+	b.RLock()
+	defer b.RUnlock()
+	return Best{
+		AllTime: b.Best.AllTime,
+		Year:    b.Best.Year,
+		Month:   b.Best.Month,
+		Week:    b.Best.Week,
+		Day:     b.Best.Day,
+		Hour:    b.Best.Hour,
+		Minute:  b.Best.Minute,
 	}
 }
 
-func (best *CurrentBest) Format() string {
+func parseElement(elements []string, index int, key string) (uint64, error) {
+	if elements[index] != key {
+		return 0, fmt.Errorf("Could not parse best: %s key", key)
+	}
+	value, err := strconv.Atoi(elements[index+1])
+	if err != nil {
+		return 0, fmt.Errorf("Could not parse best: %s value", key)
+	}
+	return uint64(value), nil
+}
+
+func ParseBest(s string) (Best, error) {
+	best := Best{}
+	elements := strings.Split(s, ":")
+	fmt.Printf("elements: %v\n", elements)
+
+	alltime, err := parseElement(elements, 0, "alltime")
+	if err != nil {
+		return Best{}, err
+	}
+	best.AllTime = uint64(alltime)
+
+	year, err := parseElement(elements, 2, "year")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Year = uint64(year)
+
+	month, err := parseElement(elements, 4, "month")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Month = uint64(month)
+
+	week, err := parseElement(elements, 6, "week")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Week = uint64(week)
+
+	day, err := parseElement(elements, 8, "day")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Day = uint64(day)
+
+	hour, err := parseElement(elements, 10, "hour")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Hour = uint64(hour)
+
+	minute, err := parseElement(elements, 12, "minute")
+	if err != nil {
+		return Best{}, err
+	}
+	best.Minute = uint64(minute)
+
+	return best, nil
+}
+
+func (best Best) Format() string {
 	var sb strings.Builder
 
 	sb.WriteString("alltime:")
@@ -54,60 +123,101 @@ func (best *CurrentBest) Format() string {
 	return sb.String()
 }
 
-func newBest() CurrentBest {
-	return CurrentBest{}
+func (best *CurrentBest) Format() string {
+	best.RLock()
+	defer best.RUnlock()
+
+	return best.Best.Format()
 }
 
-func Best(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *Cond) {
+// func newBest() CurrentBest {
+// 	return CurrentBest{}
+// }
+
+func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *Cond, backup Backup) {
+	t := time.NewTicker(500 * time.Millisecond)
+
+	defer t.Stop()
+
+	bestChan := make(chan Best, 1)
+	bestChan <- best.Copy()
+	go func() {
+		for range t.C {
+			bestClock.Broadcast()
+			best := <-bestChan
+			bestChan <- best
+			err := backup.Backup(count.Load(), best)
+			if err != nil {
+				log.Errorf("Could not backup: %v", err)
+			}
+		}
+	}()
+
 	nextMinute := make(chan struct{})
 	nextHour := make(chan struct{})
 	nextDay := make(chan struct{})
 	nextWeek := make(chan struct{})
 	nextMonth := make(chan struct{})
 	nextYear := make(chan struct{})
-	// backup := make(chan struct{})
 
-	c := cron.New()
-	_, err := c.AddFunc("* * * * *", func() { nextMinute <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	_, err = c.AddFunc("@hourly", func() { nextHour <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	_, err = c.AddFunc("@daily", func() { nextDay <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	// @weekly starts sunday instead of monday
-	_, err = c.AddFunc("0 0 * * 1", func() { nextWeek <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	_, err = c.AddFunc("@monthly", func() { nextMonth <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	_, err = c.AddFunc("@yearly", func() { nextYear <- struct{}{} })
-	if err != nil {
-		panic("Couldn't start cron")
-	}
-	c.Start()
+	go func() {
+		c := cron.New()
+		_, err := c.AddFunc("* * * * *", func() { nextMinute <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		_, err = c.AddFunc("@hourly", func() { nextHour <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		_, err = c.AddFunc("@daily", func() { nextDay <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		// @weekly starts sunday instead of monday
+		_, err = c.AddFunc("0 0 * * 1", func() { nextWeek <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		_, err = c.AddFunc("@monthly", func() { nextMonth <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		_, err = c.AddFunc("@yearly", func() { nextYear <- struct{}{} })
+		if err != nil {
+			panic("Couldn't start cron")
+		}
+		c.Start()
 
-	b := newBest()
+		select {
+		case <-nextMinute:
+			best.Lock()
+			best.Best.Minute = count.Load()
+			best.Unlock()
+		case <-nextHour:
+			best.Lock()
+			best.Best.Hour = count.Load()
+			best.Unlock()
+		case <-nextDay:
+			best.Lock()
+			best.Best.Day = count.Load()
+			best.Unlock()
+		case <-nextWeek:
+			best.Lock()
+			best.Best.Week = count.Load()
+			best.Unlock()
+		case <-nextMonth:
+			best.Lock()
+			best.Best.Month = count.Load()
+			best.Unlock()
+		case <-nextYear:
+			best.Lock()
+			best.Best.Year = count.Load()
+			best.Unlock()
+		}
+	}()
+
 	for {
-
-		// wait for next minute
-		// bestClock.L.Lock()
-		// bestClock.Wait()
-		//
-		// best.RLock()
-		// b := best.Copy()
-		// best.RUnlock()
-		//
-		// bestClock.L.Unlock()
-
 		// wait for tick to update count
 		tickClock.L.Lock()
 		tickClock.Wait()
@@ -116,50 +226,46 @@ func Best(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *C
 
 		tickClock.L.Unlock()
 
-		if c <= b.Minute {
+		best.Lock()
+		if c <= best.Best.Minute {
+			best.Unlock()
 			continue
 		}
-		b.Minute = c
-		if c <= b.Hour {
+		best.Best.Minute = c
+		if c <= best.Best.Hour {
+			best.Unlock()
 			continue
 		}
-		b.Hour = c
-		if c <= b.Day {
+		best.Best.Hour = c
+		if c <= best.Best.Day {
+			best.Unlock()
 			continue
 		}
-		b.Day = c
-		if c <= b.Week {
+		best.Best.Day = c
+		if c <= best.Best.Week {
+			best.Unlock()
 			continue
 		}
-		b.Week = c
-		if c <= b.Month {
+		best.Best.Week = c
+		if c <= best.Best.Month {
+			best.Unlock()
 			continue
 		}
-		b.Month = c
-		if c <= b.Year {
+		best.Best.Month = c
+		if c <= best.Best.Year {
+			best.Unlock()
 			continue
 		}
-		b.Year = c
-		if c <= b.AllTime {
+		best.Best.Year = c
+		if c <= best.Best.AllTime {
+			best.Unlock()
 			continue
 		}
-		b.AllTime = c
+		best.Best.AllTime = c
+		best.Unlock()
 
-		select {
-		case <-nextMinute:
-			b.Minute = c
-			bestClock.Broadcast()
-		case <-nextHour:
-			b.Hour = c
-		case <-nextDay:
-			b.Day = c
-		case <-nextWeek:
-			b.Week = c
-		case <-nextMonth:
-			b.Month = c
-		case <-nextYear:
-			b.Year = c
-		}
-		log.Debugf("current best: %s", b.Format())
+		<-bestChan
+		bestChan <- best.Copy()
+
 	}
 }

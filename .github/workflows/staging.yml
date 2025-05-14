@@ -14,6 +14,8 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with: 
       deploy_env: staging
+      backup_best: ${{ vars.BACKUP_BEST_PATH_STAGING }}
+      backup_current: ${{ vars.BACKUP_CURRENT_PATH_STAGING }}
     secrets:
       server_ip: ${{ secrets.SERVER_IP }}
       ssh_key: ${{ secrets.SSH_PRIVATE }}
