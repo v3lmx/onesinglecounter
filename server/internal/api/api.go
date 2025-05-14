@@ -117,15 +117,9 @@ func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- strin
 		cond.L.Lock()
 		cond.Wait()
 
-		var b core.CurrentBest
+		var b core.Best
 		best.RLock()
-		b.AllTime = best.AllTime
-		b.Year = best.Year
-		b.Month = best.Month
-		b.Week = best.Week
-		b.Day = best.Day
-		b.Hour = best.Hour
-		b.Minute = best.Minute
+		b = best.Copy()
 		best.RUnlock()
 
 		cond.L.Unlock()

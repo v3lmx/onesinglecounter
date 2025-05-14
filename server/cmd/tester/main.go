@@ -12,7 +12,7 @@ import (
 	"github.com/v3lmx/counter/internal/tester"
 )
 
-var addr = flag.String("addr", "localhost:10001", "http service address")
+var addr = flag.String("addr", "localhost:9000", "http service address")
 var numClients = flag.Int("numClients", 1, "Number of clients to spawn")
 
 func main() {

@@ -26,8 +26,7 @@ for (const time of timespansList) {
     best.set(time, 0);
 }
 
-console.log(import.meta.env.VITE_WS_URL)
-const wsUrl = import.meta.env.VITE_WS_URL + '/connect' || "ws://localhost:9000/connect";
+const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:9000/connect";
 const ws = new WebSocket(wsUrl);
 
 ws.binaryType = "arraybuffer";
@@ -54,17 +53,19 @@ ws.onopen = (event) => {
 };
 
 ws.onmessage = (event) => {
-    if (event.data === messageReset) {
-        count = 0;
-    }
-    if (event.data === messageIncrement) {
-        count++;
-        for (const time of timespansList) {
-            if (count > best.get(time)) {
-                best.set(time, count);
-            }
-        }
-    }
+    // if (event.data === messageReset) {
+    //     count = 0;
+    // }
+    //
+    // if (event.data === messageIncrement) {
+    //     count++;
+    //     for (const time of timespansList) {
+    //         if (count > best.get(time)) {
+    //             best.set(time, count);
+    //         }
+    //     }
+    // }
+
     const e = event.data.split(":");
     if (e[0] === messageCurrent) {
         count = e[1];
@@ -74,8 +75,8 @@ ws.onmessage = (event) => {
             }
         }
     }
-    if (e[0] === messageBest) {
-        for (let i = 1; i < e.length - 1; i += 2) {
+    if (e[0] === "alltime") {
+        for (let i = 0; i < e.length - 1; i += 2) {
             const time = e[i];
             const value = e[i + 1];
             best.set(time, value);

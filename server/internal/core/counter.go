@@ -36,58 +36,24 @@ type CountM struct {
 }
 
 func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond) {
-	// func Game(events <-chan Event, clientsChan <-chan Client, best chan<- uint64, requestBest chan<- struct{}, responseBest <-chan CurrentBest, cronBest <-chan CurrentBest) {
 	log.Debug("handle game")
-	// count := uint64(0)
-
-	// go func() {
-	// 	for {
-	// 		currentBest, ok := <-cronBest
-	// 		if !ok {
-	// 			log.Error("error receiving from channel currentBest")
-	// 		}
-	// 		dispatch(clients, MessageBest+":"+currentBest.Format())
-	// 	}
-	// }()
-
-	// tickTime := make(chan time.Duration, 1)
-	// tickTime <- 5 * time.Millisecond
-	// t := time.NewTicker(1000 * time.Millisecond)
-	t := time.NewTicker(1 * time.Millisecond)
-	// >>> t.Reset(new_duration)
+	t := time.NewTicker(10 * time.Millisecond)
 
 	defer t.Stop()
 
 	go func() {
-		for {
-			select {
-			// case newTickTime := <-tickTime:
-			// 	t = time.NewTicker(newTickTime)
-			case <-t.C:
-				log.Debug("Broadcasting")
-				cond.Broadcast()
-				// tick := <-tickTime
-				// tickTime <- tick
-				// count.RLock()
-				// c := count.Count
-				// count.RUnlock()
-				// ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(tick))
-				// go dispatch(ctx, clients, MessageCurrent+":"+strconv.Itoa(int(c)), tickTime)
-				// cancel()
-			}
+		for range t.C {
+			cond.Broadcast()
 		}
 	}()
 
 	for {
-		log.Debug("waiting for event")
-
 		cmd, ok := <-commands
 		if !ok {
 			log.Error("error receiving from channel event")
 		}
 		log.Debugf("received event : %v", cmd)
 
-		// var msg Message
 		switch cmd {
 		case CommandReset:
 			count.Store(0)

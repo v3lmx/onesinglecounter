@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/v3lmx/counter/internal/api"
+	"github.com/v3lmx/counter/internal/backup"
 	"github.com/v3lmx/counter/internal/core"
 )
 
@@ -36,8 +37,27 @@ func main() {
 	tickClock := core.NewCond(&m1)
 	bestClock := core.NewCond(&m2)
 
+	currentPath := "./current.bak"
+	bestPath := "./best.bak"
+
+	backup, err := backup.NewFileBackup(currentPath, bestPath)
+	if err != nil {
+		log.Fatalf("Could not create backup: %v", err)
+	}
+
+	backupCurrent, backupBest, err := backup.Recover()
+	if err != nil {
+		log.Fatalf("Could not recover from backup: %v", err)
+	}
+
+	count.Store(backupCurrent)
+
+	best.Lock()
+	best.Best = backupBest
+	best.Unlock()
+
 	go core.Game(commands, &count, &tickClock)
-	go core.Best(&count, &best, &tickClock, &bestClock)
+	go core.BestLoop(&count, &best, &tickClock, &bestClock, backup)
 
 	api.HandleConnect(mux, commands, &count, &best, &tickClock, &bestClock)
 
