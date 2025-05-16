@@ -85,6 +85,7 @@
       loop:
         - "app_network_staging"
         - "app_network_prod"
+        - "admin"
 
     - name: Pull Caddy Docker image
       docker_image:
@@ -109,6 +110,7 @@
         networks:
           - name: "app_network_staging"
           - name: "app_network_prod"
+          - name: "admin"
         restart_policy: always
 
     - name: Reload Caddy configuration
