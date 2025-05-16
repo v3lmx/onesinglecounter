@@ -5,7 +5,7 @@ services:
     networks:
       - "app_network_staging"
     command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
-    restart: always
+    restart: unless-stopped
     volumes:
        - type: bind
          source: ${BACKUP_BEST_PATH}
@@ -17,7 +17,7 @@ services:
   web:
     image: ghcr.io/v3lmx/osc_web_staging:latest
     container_name: "web_staging"
-    restart: always
+    restart: unless-stopped
     volumes:
       - caddy_data:/data
       - caddy_config:/config

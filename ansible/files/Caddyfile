@@ -12,7 +12,7 @@ test.v3lmx.com {
     }
 
     handle_path /up {
-        respond "ok" 200
+        respond "test ok" 200
     }
 
     # each site deploys its caddy config
@@ -20,6 +20,22 @@ test.v3lmx.com {
     import /etc/caddy/sites/staging/*
 
     respond 401
+}
+
+monitoring.v3lmx.com {
+    log {
+        output file /var/log/caddy/monitoring.log
+    }
+
+    import /etc/caddy/cloudflare.Caddyfile
+
+    # if not wireguard address: deny
+    @denied not remote_ip 10.10.100.0/24
+    handle @denied {
+        respond 401
+    }
+
+    reverse_proxy uptime-kuma:3001
 }
 
 v3lmx.com {
@@ -30,7 +46,7 @@ v3lmx.com {
     import /etc/caddy/cloudflare.Caddyfile
 
     handle_path /up {
-        respond "ok" 200
+        respond "v3lmx ok" 200
     }
 
     # each site deploys its caddy config

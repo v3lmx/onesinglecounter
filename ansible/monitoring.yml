@@ -1,0 +1,23 @@
+---
+- name: Set up monitoring
+  hosts: all
+  become: yes
+  tags:
+    - monitoring
+
+  tasks:
+    - name: Pull Uptime Kuma Docker image
+      docker_image:
+        name: louislam/uptime-kuma
+        source: pull
+
+    - name: Run Uptime Kuma container
+      docker_container:
+        name: uptime-kuma
+        image: louislam/uptime-kuma
+        volumes:
+          - /opt/uptime-kuma:/app/data
+        networks:
+          - name: "admin"
+        restart_policy: unless-stopped
+
