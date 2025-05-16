@@ -189,31 +189,30 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestCloc
 		}
 		c.Start()
 
-		current := count.Load()
 		select {
 		case <-nextMinute:
 			best.Lock()
-			best.Best.Minute = current
+			best.Best.Minute = count.Load()
 			best.Unlock()
 		case <-nextHour:
 			best.Lock()
-			best.Best.Hour = current
+			best.Best.Hour = count.Load()
 			best.Unlock()
 		case <-nextDay:
 			best.Lock()
-			best.Best.Day = current
+			best.Best.Day = count.Load()
 			best.Unlock()
 		case <-nextWeek:
 			best.Lock()
-			best.Best.Week = current
+			best.Best.Week = count.Load()
 			best.Unlock()
 		case <-nextMonth:
 			best.Lock()
-			best.Best.Month = current
+			best.Best.Month = count.Load()
 			best.Unlock()
 		case <-nextYear:
 			best.Lock()
-			best.Best.Year = current
+			best.Best.Year = count.Load()
 			best.Unlock()
 		}
 	}()
