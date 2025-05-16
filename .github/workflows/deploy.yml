@@ -69,6 +69,8 @@ jobs:
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
             docker-compose pull
             docker-compose down -f old_compose.yml
+            mkdir -p "$(dirname "${{ inputs.backup_best }}")" && touch "${{ inputs.backup_best }}"
+            mkdir -p "$(dirname "${{ inputs.backup_current }}")" && touch "${{ inputs.backup_current }}"
             echo "BACKUP_BEST_PATH=${{ inputs.backup_best }}" > .env
             echo "BACKUP_CURRENT_PATH=${{ inputs.backup_current }}" >> .env
             docker-compose up --env-file .env -d --force-recreate --remove-orphans
