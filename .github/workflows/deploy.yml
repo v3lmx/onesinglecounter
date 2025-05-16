@@ -57,9 +57,6 @@ jobs:
     steps:
       - name: deploy with ssh
         uses: appleboy/ssh-action@v1.2.2
-        env: 
-          BACKUP_BEST_PATH: ${{ inputs.backup_best }}
-          BACKUP_CURRENT_PATH: ${{ inputs.backup_current }}
         with:
           host: ${{ secrets.server_ip }}
           username: ${{ secrets.ssh_user }}
@@ -72,7 +69,7 @@ jobs:
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
             docker-compose pull
             docker-compose down -f old_compose.yml
-            echo ${{ inputs.backup_best }} > .env
-            echo ${{ inputs.backup_current }} >> .env
+            echo "${{ inputs.backup_best }}" > .env
+            echo "${{ inputs.backup_current }}" >> .env
             docker-compose up --env-file .env -d --force-recreate --remove-orphans
             rm -f old_compose.yml
