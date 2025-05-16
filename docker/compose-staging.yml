@@ -4,6 +4,14 @@ services:
     container_name: "server_staging"
     networks:
       - "app_network_staging"
+    command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
+    volumes:
+       - type: bind
+         source: ${BACKUP_BEST_PATH}
+         target: /best.bak
+       - type: bind
+         source: ${BACKUP_CURRENT_PATH}
+         target: /current.bak
 
   web:
     image: ghcr.io/v3lmx/osc_web_staging:latest

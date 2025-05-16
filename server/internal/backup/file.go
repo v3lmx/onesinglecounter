@@ -68,7 +68,11 @@ func (fb FileBackup) Recover() (uint64, core.Best, error) {
 		return 0, core.Best{}, fmt.Errorf("Could not recover current backup: %v", err)
 	}
 
-	fmt.Printf("current: %v", string(currentBuffer))
+	currentStr := string(currentBuffer)
+	if currentStr == "" {
+		return 0, core.Best{}, nil
+	}
+
 	current, err := strconv.Atoi(string(currentBuffer))
 	if err != nil {
 		return 0, core.Best{}, fmt.Errorf("Could not parse current backup: %v", err)
@@ -78,9 +82,13 @@ func (fb FileBackup) Recover() (uint64, core.Best, error) {
 	if err != nil {
 		return 0, core.Best{}, fmt.Errorf("Could not recover best backup: %v", err)
 	}
-	fmt.Printf("best: %v", string(bestBuffer))
 
-	best, err := (core.ParseBest(string(bestBuffer)))
+	bestStr := string(bestBuffer)
+	if bestStr == "" {
+		return 0, core.Best{}, nil
+	}
+
+	best, err := (core.ParseBest(bestStr))
 	if err != nil {
 		return 0, core.Best{}, fmt.Errorf("Could not parse current backup: %v", err)
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"os"
 	"sync"
@@ -22,12 +23,21 @@ func checkCORS(next http.Handler) http.Handler {
 var count atomic.Uint64
 var best = core.CurrentBest{}
 
+var port string
+var backupCurrentPath string
+var backupBestPath string
+
 func main() {
 	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
 		Level:           log.DebugLevel,
 		ReportCaller:    true,
 		ReportTimestamp: true,
 	}))
+
+	flag.StringVar(&port, "port", "9000", "Port to expose the api")
+	flag.StringVar(&backupCurrentPath, "backupCurrentPath", "./current.bak", "File backup of the current value")
+	flag.StringVar(&backupBestPath, "backupBestPath", "./best.bak", "File backup of the best values")
+	flag.Parse()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
@@ -37,10 +47,7 @@ func main() {
 	tickClock := core.NewCond(&m1)
 	bestClock := core.NewCond(&m2)
 
-	currentPath := "./current.bak"
-	bestPath := "./best.bak"
-
-	backup, err := backup.NewFileBackup(currentPath, bestPath)
+	backup, err := backup.NewFileBackup(backupCurrentPath, backupBestPath)
 	if err != nil {
 		log.Fatalf("Could not create backup: %v", err)
 	}
