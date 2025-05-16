@@ -18,6 +18,14 @@ on:
         description: 'deployment environment (staging/prod)'
         required: true
         type: string
+      backup_best:
+        description: 'backup file for best'
+        required: true
+        type: string
+      backup_current:
+        description: 'backup file for current'
+        required: true
+        type: string
 
 jobs: 
   build_server:
@@ -61,5 +69,7 @@ jobs:
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
             docker-compose pull
             docker-compose down -f old_compose.yml
-            docker-compose up -d --force-recreate --remove-orphans
-            rm old_compose.yml
+            echo ${{ inputs.backup_best }} > .env
+            echo ${{ inputs.backup_current }} >> .env
+            docker-compose up --env-file .env -d --force-recreate --remove-orphans
+            rm -f old_compose.yml
