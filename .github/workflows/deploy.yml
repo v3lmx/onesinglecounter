@@ -62,6 +62,9 @@ jobs:
           username: ${{ secrets.ssh_user }}
           key: ${{ secrets.ssh_key }}
           port: ${{ secrets.ssh_port }} 
+          env: 
+            BACKUP_BEST_PATH: ${{ inputs.backup_best }}
+            BACKUP_CURRENT_PATH: ${{ inputs.backup_current }}
           script: |
             mkdir -p $HOME/osc/${{ inputs.deploy_env }}
             cd $HOME/osc/${{ inputs.deploy_env }}
