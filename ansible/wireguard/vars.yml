@@ -1,9 +1,0 @@
----
-wireguard_interface: wg0
-wireguard_port: 51820
-wireguard_private_key: "{{ lookup('file', 'secrets/private.key') }}"
-wireguard_public_key: "{{ lookup('file', 'secrets/public.key') }}"
-wireguard_address: 10.10.100.1/24
-wireguard_peers: 
-  - public_key: "rIcmUqk1aucxL5NY4CdOyipgviB9zbIQDkKJjs2eclc="
-    allowed_ips: 10.10.100.2/32

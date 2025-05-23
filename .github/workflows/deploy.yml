@@ -1,0 +1,77 @@
+name: deploy
+
+on:
+  workflow_call:
+    secrets:
+      server_ip:
+        required: true
+      ssh_key:
+        required: true
+      ssh_user:
+        required: true
+      ssh_port:
+        required: true
+      ws_url:
+        required: true
+    inputs:
+      deploy_env:
+        description: 'deployment environment (staging/prod)'
+        required: true
+        type: string
+      backup_best:
+        description: 'backup file for best'
+        required: true
+        type: string
+      backup_current:
+        description: 'backup file for current'
+        required: true
+        type: string
+
+jobs: 
+  build_server:
+    uses: ./.github/workflows/server.yml
+    with: 
+      image_name: osc_server_${{ inputs.deploy_env }}
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  build_web:
+    uses: ./.github/workflows/web.yml
+    with: 
+      image_name: osc_web_${{ inputs.deploy_env }}
+    secrets:
+      ws_url: ${{ secrets.ws_url }}
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build_server, build_web]
+    # environment: ${{ inputs.deploy_env }}
+    steps:
+      - name: deploy with ssh
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.server_ip }}
+          username: ${{ secrets.ssh_user }}
+          key: ${{ secrets.ssh_key }}
+          port: ${{ secrets.ssh_port }} 
+          script: |
+            mkdir -p $HOME/osc/${{ inputs.deploy_env }}
+            cd $HOME/osc/${{ inputs.deploy_env }}
+            mv compose.yml old_compose.yml
+            curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
+            docker-compose pull
+            docker-compose down -f old_compose.yml
+            mkdir -p "$(dirname "${{ inputs.backup_best }}")" && touch "${{ inputs.backup_best }}"
+            mkdir -p "$(dirname "${{ inputs.backup_current }}")" && touch "${{ inputs.backup_current }}"
+            echo "BACKUP_BEST_PATH=${{ inputs.backup_best }}" > .env
+            echo "BACKUP_CURRENT_PATH=${{ inputs.backup_current }}" >> .env
+            docker-compose --env-file .env up -d --force-recreate --remove-orphans
+            rm -f old_compose.yml

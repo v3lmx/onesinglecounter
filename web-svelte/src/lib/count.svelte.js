@@ -3,8 +3,52 @@ import { SvelteMap } from "svelte/reactivity";
 let count = $state(0);
 export const best = new SvelteMap();
 
+let counterStyle = $derived.by(() => {
+    if (count < 10) {
+        return "default"
+    }
+    if (count < 25) {
+        return "10"
+    }
+    if (count < 50) {
+        return "25"
+    }
+    if (count == 69) {
+        return "69"
+    }
+    if (count < 100) {
+        return "50"
+    }
+    if (count < 200) {
+        return "100"
+    }
+    if (count == 420) {
+        return "420"
+    }
+    if (count < 500) {
+        return "200"
+    }
+    if (count < 1000) {
+        return "500"
+    }
+    if (count < 10000) {
+        return "1000"
+    }
+    if (count < 100000) {
+        return "10000"
+    }
+    if (count < 1000000) {
+        return "100000"
+    }
+    return "1000000"
+});
+
+
 export function getCount() {
     return count;
+}
+export function getCounterStyle() {
+    return counterStyle;
 }
 
 export const timespansList = [
@@ -26,7 +70,9 @@ for (const time of timespansList) {
     best.set(time, 0);
 }
 
-const ws = new WebSocket("ws://localhost:10001/connect");
+const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:9000/connect";
+const ws = new WebSocket(wsUrl);
+
 ws.binaryType = "arraybuffer";
 
 export function reset() {
@@ -45,23 +91,11 @@ export function refreshBest() {
     ws.send(messageBest);
 }
 
-ws.onopen = (event) => {
+ws.onopen = () => {
     current();
-    // getBest();
 };
 
 ws.onmessage = (event) => {
-    if (event.data === messageReset) {
-        count = 0;
-    }
-    if (event.data === messageIncrement) {
-        count++;
-        for (const time of timespansList) {
-            if (count > best.get(time)) {
-                best.set(time, count);
-            }
-        }
-    }
     const e = event.data.split(":");
     if (e[0] === messageCurrent) {
         count = e[1];
@@ -71,13 +105,11 @@ ws.onmessage = (event) => {
             }
         }
     }
-    if (e[0] === messageBest) {
-        for (let i = 1; i < e.length - 1; i += 2) {
+    if (e[0] === "alltime") {
+        for (let i = 0; i < e.length - 1; i += 2) {
             const time = e[i];
             const value = e[i + 1];
             best.set(time, value);
         }
     }
-
-    console.log(event.data);
 };

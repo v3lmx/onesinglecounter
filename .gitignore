@@ -1,4 +1,6 @@
 .direnv
 vendor/
-ansible/wireguard/secrets/*
+ansible/secrets/*
 ansible/inventory.yml
+dist/
+server/*.bak

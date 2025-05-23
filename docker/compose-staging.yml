@@ -1,0 +1,34 @@
+services:
+  server:
+    image: ghcr.io/v3lmx/osc_server_staging:latest
+    container_name: "server_staging"
+    networks:
+      - "app_network_staging"
+    command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
+    restart: unless-stopped
+    volumes:
+       - type: bind
+         source: ${BACKUP_BEST_PATH}
+         target: /best.bak
+       - type: bind
+         source: ${BACKUP_CURRENT_PATH}
+         target: /current.bak
+
+  web:
+    image: ghcr.io/v3lmx/osc_web_staging:latest
+    container_name: "web_staging"
+    restart: unless-stopped
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - "app_network_staging"
+    command: caddy file-server --root /srv --access-log
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks: 
+  app_network_staging: 
+    external: true
