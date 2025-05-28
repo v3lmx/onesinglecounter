@@ -130,12 +130,8 @@ func (best *CurrentBest) Format() string {
 	return best.Best.Format()
 }
 
-// func newBest() CurrentBest {
-// 	return CurrentBest{}
-// }
-
-func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestClock *Cond, backup Backup) {
-	t := time.NewTicker(500 * time.Millisecond)
+func BestLoop(count *atomic.Uint64, best *CurrentBest, tickBroadcast *Cond, bestBroadcast *Cond, bestTickTime time.Duration, backup Backup) {
+	t := time.NewTicker(bestTickTime)
 
 	defer t.Stop()
 
@@ -143,7 +139,7 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestCloc
 	bestChan <- best.Copy()
 	go func() {
 		for range t.C {
-			bestClock.Broadcast()
+			bestBroadcast.Broadcast()
 			best := <-bestChan
 			bestChan <- best
 			err := backup.Backup(count.Load(), best)
@@ -189,42 +185,47 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestCloc
 		}
 		c.Start()
 
-		select {
-		case <-nextMinute:
-			best.Lock()
-			best.Best.Minute = count.Load()
-			best.Unlock()
-		case <-nextHour:
-			best.Lock()
-			best.Best.Hour = count.Load()
-			best.Unlock()
-		case <-nextDay:
-			best.Lock()
-			best.Best.Day = count.Load()
-			best.Unlock()
-		case <-nextWeek:
-			best.Lock()
-			best.Best.Week = count.Load()
-			best.Unlock()
-		case <-nextMonth:
-			best.Lock()
-			best.Best.Month = count.Load()
-			best.Unlock()
-		case <-nextYear:
-			best.Lock()
-			best.Best.Year = count.Load()
-			best.Unlock()
+		for {
+			select {
+			case <-nextMinute:
+				best.Lock()
+				best.Best.Minute = count.Load()
+				best.Unlock()
+			case <-nextHour:
+				best.Lock()
+				best.Best.Hour = count.Load()
+				best.Unlock()
+			case <-nextDay:
+				best.Lock()
+				best.Best.Day = count.Load()
+				best.Unlock()
+			case <-nextWeek:
+				best.Lock()
+				best.Best.Week = count.Load()
+				best.Unlock()
+			case <-nextMonth:
+				best.Lock()
+				best.Best.Month = count.Load()
+				best.Unlock()
+			case <-nextYear:
+				best.Lock()
+				best.Best.Year = count.Load()
+				best.Unlock()
+			}
 		}
 	}()
 
 	for {
+		<-bestChan
+		bestChan <- best.Copy()
+
 		// wait for tick to update count
-		tickClock.L.Lock()
-		tickClock.Wait()
+		tickBroadcast.L.Lock()
+		tickBroadcast.Wait()
 
 		c := count.Load()
 
-		tickClock.L.Unlock()
+		tickBroadcast.L.Unlock()
 
 		best.Lock()
 		if c <= best.Best.Minute {
@@ -263,9 +264,6 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickClock *Cond, bestCloc
 		}
 		best.Best.AllTime = c
 		best.Unlock()
-
-		<-bestChan
-		bestChan <- best.Copy()
 
 	}
 }

@@ -1,16 +1,12 @@
 package main
 
 import (
-	"flag"
+	"log/slog"
 	"net/http"
 	"os"
-	"sync"
-	"sync/atomic"
 
-	"github.com/charmbracelet/log"
-	"github.com/v3lmx/counter/internal/api"
-	"github.com/v3lmx/counter/internal/backup"
-	"github.com/v3lmx/counter/internal/core"
+	"github.com/v3lmx/counter/internal/bootstrap"
+	"github.com/v3lmx/counter/internal/observability"
 )
 
 func checkCORS(next http.Handler) http.Handler {
@@ -20,54 +16,22 @@ func checkCORS(next http.Handler) http.Handler {
 	})
 }
 
-var count atomic.Uint64
-var best = core.CurrentBest{}
-
-var port string
-var backupCurrentPath string
-var backupBestPath string
-
 func main() {
-	log.SetDefault(log.NewWithOptions(os.Stdout, log.Options{
-		Level:           log.DebugLevel,
-		ReportCaller:    true,
-		ReportTimestamp: true,
-	}))
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
+	slog.SetDefault(slog.New(handler))
 
-	flag.StringVar(&port, "port", "9000", "Port to expose the api")
-	flag.StringVar(&backupCurrentPath, "backupCurrentPath", "./current.bak", "File backup of the current value")
-	flag.StringVar(&backupBestPath, "backupBestPath", "./best.bak", "File backup of the best values")
-	flag.Parse()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
-	commands := make(chan core.Command)
-
-	var m1, m2 sync.Mutex
-	tickClock := core.NewCond(&m1)
-	bestClock := core.NewCond(&m2)
-
-	backup, err := backup.NewFileBackup(backupCurrentPath, backupBestPath)
+	config, err := bootstrap.ParseFlags()
 	if err != nil {
-		log.Fatalf("Could not create backup: %v", err)
+		slog.Error("Failed to parse flags: ", "err", err)
+		os.Exit(1)
 	}
 
-	backupCurrent, backupBest, err := backup.Recover()
+	app, err := bootstrap.Initialize(config)
 	if err != nil {
-		log.Fatalf("Could not recover from backup: %v", err)
+		slog.Error("Failed to initialize application: ", "err", err)
+		os.Exit(1)
 	}
 
-	count.Store(backupCurrent)
-
-	best.Lock()
-	best.Best = backupBest
-	best.Unlock()
-
-	go core.Game(commands, &count, &tickClock)
-	go core.BestLoop(&count, &best, &tickClock, &bestClock, backup)
-
-	api.HandleConnect(mux, commands, &count, &best, &tickClock, &bestClock)
-
-	log.Info("starting server on port 9000")
-	log.Error(http.ListenAndServe(":9000", checkCORS(mux)))
+	slog.Info("starting server", "port", config.Port)
+	slog.Error(http.ListenAndServe(":"+config.Port, observability.TestCounterMiddleware(checkCORS(app.Mux))).Error())
 }

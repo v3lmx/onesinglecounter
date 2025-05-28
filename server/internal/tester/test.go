@@ -2,10 +2,10 @@ package tester
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
 )
 
@@ -20,7 +20,7 @@ func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 	defer wg.Done()
 	c, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		panic("dial:" + err.Error())
 	}
 	defer c.Close()
 
@@ -48,7 +48,7 @@ func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 		case <-ticker.C:
 			err := c.WriteMessage(websocket.TextMessage, []byte(MessageIncrement))
 			if err != nil {
-				log.Errorf("write: %v", err)
+				fmt.Printf("error write: %v", err)
 				return
 			}
 		case <-ctx.Done():

@@ -2,11 +2,12 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"sync/atomic"
 
-	"github.com/charmbracelet/log"
 	"github.com/gorilla/websocket"
 
 	"github.com/v3lmx/counter/internal/core"
@@ -22,11 +23,11 @@ var upgrader = websocket.Upgrader{
 
 func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Get /connect")
+		slog.Debug("Get /connect")
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Error("error upgrading connection: ", err)
+			slog.Error("error upgrading connection: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -48,7 +49,7 @@ func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atom
 			case m := <-msg:
 				err := conn.WriteMessage(websocket.TextMessage, []byte(m))
 				if err != nil {
-					log.Warnf("Error : %v", err)
+					slog.Warn("Error writing message: ", err.Error())
 					return
 				}
 			}
@@ -65,10 +66,10 @@ func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocke
 
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Errorf("Error : %v", err)
+			slog.Error("Error reading message: " + err.Error())
 			return
 		}
-		log.Debugf("msg: %b", msg)
+		slog.Debug(fmt.Sprintf("msg: %b", msg))
 
 		switch string(msg) {
 		case core.MessageReset:
@@ -80,7 +81,7 @@ func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocke
 		case core.MessageBest:
 			commands <- core.CommandBest
 		default:
-			log.Errorf("Invalid command: %s", msg)
+			slog.Error("Invalid command: " + string(msg))
 			continue
 		}
 	}
@@ -109,6 +110,7 @@ func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- stri
 
 func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- string, best *core.CurrentBest, cond *core.Cond) {
 	defer cancel()
+	msg <- core.MessageBest
 	for {
 		if ctx.Err() != nil {
 			return

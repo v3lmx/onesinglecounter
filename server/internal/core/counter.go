@@ -1,11 +1,11 @@
 package core
 
 import (
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 )
 
@@ -35,9 +35,9 @@ type CountM struct {
 	sync.RWMutex
 }
 
-func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond) {
-	log.Debug("handle game")
-	t := time.NewTicker(10 * time.Millisecond)
+func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond, counterTickTime time.Duration) {
+	slog.Debug("handle game")
+	t := time.NewTicker(counterTickTime)
 
 	defer t.Stop()
 
@@ -50,34 +50,18 @@ func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond) {
 	for {
 		cmd, ok := <-commands
 		if !ok {
-			log.Error("error receiving from channel event")
+			slog.Error("error receiving from channel event")
 		}
-		log.Debugf("received event : %v", cmd)
+		slog.Debug("received event: ", "cmd", cmd)
 
 		switch cmd {
 		case CommandReset:
 			count.Store(0)
 		case CommandIncrement:
 			count.Add(1)
-		case CommandCurrent:
-			log.Debug("would current")
-			// count.RLock()
-			// c := count.Count
-			// count.RUnlock()
-			// msg := MessageCurrent + ":" + strconv.Itoa(int(c))
-			// dispatchSingle(clients, event.ClientDest, msg)
-
-		// >>>>>>>>>>>>>>>>>>> TODO
-		// update best every minute with cron
-
-		// case CommandBest:
-		// 	requestBest <- struct{}{}
-		// 	currentBest := <-responseBest
-		// 	dispatchSingle(clients, event.ClientDest, MessageBest+":"+currentBest.Format())
 		default:
-			log.Errorf("invalid event: %v", cmd)
+			slog.Error("invalid event: %v", "cmd", cmd)
 		}
-		log.Debug(cmd)
-		// best <- count
+		slog.Debug("cmd:", "cmd", cmd)
 	}
 }
