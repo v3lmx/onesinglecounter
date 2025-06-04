@@ -5,7 +5,7 @@ services:
     networks:
       - "app_network_staging"
     ports:
-      - "10001:9001"
+      - "10001:8001"
     command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
     restart: unless-stopped
     volumes:
