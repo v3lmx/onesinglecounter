@@ -4,6 +4,8 @@ services:
     container_name: "server_staging"
     networks:
       - "app_network_staging"
+    ports:
+      - "10001:9001"
     command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
     restart: unless-stopped
     volumes:

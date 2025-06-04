@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -17,6 +18,7 @@ import (
 
 type Config struct {
 	Port              string
+	MetricsPort       string
 	BackupCurrentPath string
 	BackupBestPath    string
 	CounterTick       int
@@ -38,7 +40,8 @@ type App struct {
 func ParseFlags() (*Config, error) {
 	config := &Config{}
 
-	flag.StringVar(&config.Port, "port", "9000", "Port to expose the api")
+	flag.StringVar(&config.Port, "port", "8000", "Port to expose the api")
+	flag.StringVar(&config.MetricsPort, "metricsPort", "8001", "Port to expose the metrics")
 	flag.StringVar(&config.BackupCurrentPath, "backupCurrentPath", "./current.bak", "File backup of the current value")
 	flag.StringVar(&config.BackupBestPath, "backupBestPath", "./best.bak", "File backup of the best values")
 	flag.IntVar(&config.CounterTick, "counterTick", 5, "Counter tick time in milliseconds")
@@ -87,16 +90,20 @@ func Initialize(config *Config) (*App, error) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/up", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
-	mux.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
-		metrics.WritePrometheus(w, true)
-	})
 	app.SetupRoutes(mux)
 
-	// Expose the registered metrics at `/metrics` path.
+	go app.SetupMetrics(config)
 
 	app.StartGame()
 
 	return app, nil
+}
+
+func (app *App) SetupMetrics(config *Config) {
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+		metrics.WritePrometheus(w, true)
+	})
+	slog.Error(http.ListenAndServe(":"+config.MetricsPort, nil).Error())
 }
 
 func (app *App) SetupRoutes(mux *http.ServeMux) {

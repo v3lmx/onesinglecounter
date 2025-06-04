@@ -1,0 +1,31 @@
+# METRICS
+
+[sources.osc_staging_metrics]
+type = "prometheus_scrape"
+endpoints = [ "http://localhost:10001/metrics" ]
+
+[sinks.vm]
+inputs = ["osc_staging_metrics"]
+type = "prometheus_remote_write"
+endpoint = "https://10.10.30.101:8428/api/v1/write"
+
+# LOGS
+
+# [sinks.vlogs.encoding]
+# codec = "json"
+#
+# [sinks.vlogs.framing]
+# method = "newline_delimited"
+#
+# [sinks.vlogs.healthcheck]
+# enabled = false
+#
+# [sinks.victoriametrics_sink]
+# type = "prometheus_remote_write"
+# inputs = ["host_metrics_source"]
+# endpoint = "https://<victoriametrics_url>/api/v1/write"
+#
+# [sinks.victoriametrics_sink.healthcheck]
+# enabled = false
+#
+#

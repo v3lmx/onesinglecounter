@@ -70,7 +70,7 @@ for (const time of timespansList) {
     best.set(time, 0);
 }
 
-const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:9000/connect";
+const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000/connect";
 const ws = new WebSocket(wsUrl);
 
 ws.binaryType = "arraybuffer";

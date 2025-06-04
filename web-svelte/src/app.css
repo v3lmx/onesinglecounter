@@ -31,6 +31,7 @@ body {
     width: 100vw;
     min-height: 100vh;
     font: 1.2em sans-serif;
+    touch-action: manipulation;
 }
 
 
