@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - main
-      - cicd
+      - metrics
     tags:
       - "[0-9]+.[0-9]+.[0-9]+-rc"
       - "test.[0-9]+.[0-9]+.[0-9]+-rc"
