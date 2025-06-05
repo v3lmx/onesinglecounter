@@ -100,6 +100,12 @@ func Initialize(config *Config) (*App, error) {
 }
 
 func (app *App) SetupMetrics(config *Config) {
+	testMetric := metrics.NewCounter(`osc_test_metric{label="test_label"}`)
+	testMetric.Set(10)
+	testMetric.Inc()
+	testMetric.Inc()
+	testMetric.Inc()
+	testMetric.Inc()
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
 		metrics.WritePrometheus(w, true)
 	})
