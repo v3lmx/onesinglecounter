@@ -2,11 +2,11 @@
     import * as Popover from "$lib/components/ui/popover/index.ts";
     import { ExternalLink } from "lucide";
 
-    let text = `how high will it go?
+    let text = `how high can we go?
 
 the counter is the same for everyone, to be incremented by one, or reset to 0.
 
-"highest count" keeps track of the, well, highest counts achieved.`;
+you can see the highest counts achieved for each current period.`;
 </script>
 
 <div class="fixed left-1/2 bottom-1 -translate-1/2">
