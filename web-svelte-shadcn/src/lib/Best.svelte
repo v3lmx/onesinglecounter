@@ -4,7 +4,7 @@
 </script>
 
 <div
-    class="fixed left-1/2 top-8/10 -translate-1/2 flex flex-col items-center text-s md:text-xl lg:text-2xl"
+    class="fixed left-1/2 top-7/10 md:top-8/10 -translate-1/2 flex flex-col items-center text-s md:text-xl lg:text-2xl"
 >
     <Table.Root class="text-s md:text-xl lg:text-2xl">
         <Table.Body>
