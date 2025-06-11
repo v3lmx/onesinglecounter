@@ -3,7 +3,7 @@
     import { Button } from "$lib/components/ui/button/index.js";
 </script>
 
-<div class="fixed left-1/2 top-4/10 -translate-1/2 flex flex-col items-center">
+<div class="fixed left-1/2 top-3/10 -translate-1/2 flex flex-col items-center">
     <!-- <div class="flex flex-col justify-center items-center m-10"> -->
     <h1 id="counter" class="m-10 text-6xl md:text-8xl lg:text:12xl">
         {getCount()}
