@@ -46,37 +46,19 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          cache-dependency-path: web-svelte/pnpm-lock.yaml
+          cache-dependency-path: web-svelte-shadcn/pnpm-lock.yaml
           node-version: ${{ inputs.node_version }}
           cache: 'pnpm'
 
       - name: Install dependencies
-        working-directory: web-svelte
+        working-directory: web-svelte-shadcn
         run: pnpm install
 
-        ###########
-      - name: Get file
-        # id: vars
-        # run: echo "file=$(cat web-svelte/src/lib/count.svelte.js)" >> $GITHUB_OUTPUT
-        run: cat web-svelte/src/lib/count.svelte.js
-      # - name: Test output
-      #   run: echo ${{ steps.vars.outputs.file }}
-        ###########
-
       - name: Build Svelte app
-        working-directory: web-svelte
+        working-directory: web-svelte-shadcn
         run: pnpm run build
         env:
           VITE_WS_URL: ${{ secrets.ws_url }}
-
-        ###########
-      - name: Get file
-        # id: vars2
-        # run: echo "file2=$(cat web-svelte/dist/assets/index*.js)" >> $GITHUB_OUTPUT
-        run: cat web-svelte/dist/assets/index*.js
-      # - name: Test output
-      #   run: echo ${{ steps.vars2.outputs.file2 }}
-        ###########
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,6 +24,7 @@ type Config struct {
 	BackupBestPath    string
 	CounterTick       int
 	BestTick          int
+	ReleaseMode       string
 }
 
 type App struct {
@@ -35,6 +37,7 @@ type App struct {
 	CounterTickTime time.Duration
 	BestTickTime    time.Duration
 	Mux             *http.ServeMux
+	ReleaseMode     string
 }
 
 func ParseFlags() (*Config, error) {
@@ -46,6 +49,7 @@ func ParseFlags() (*Config, error) {
 	flag.StringVar(&config.BackupBestPath, "backupBestPath", "./best.bak", "File backup of the best values")
 	flag.IntVar(&config.CounterTick, "counterTick", 5, "Counter tick time in milliseconds")
 	flag.IntVar(&config.BestTick, "bestTick", 200, "Best tick time in milliseconds")
+	flag.StringVar(&config.ReleaseMode, "releaseMode", "debug", "release mode, can be 'debug' or 'release'")
 	flag.Parse()
 
 	// Validate configuration
@@ -66,6 +70,11 @@ func Initialize(config *Config) (*App, error) {
 		Commands:        make(chan core.Command),
 		CounterTickTime: time.Duration(config.CounterTick) * time.Millisecond,
 		BestTickTime:    time.Duration(config.BestTick) * time.Millisecond,
+		ReleaseMode:     config.ReleaseMode,
+	}
+
+	if config.ReleaseMode == "debug" {
+		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})))
 	}
 
 	var m1, m2 sync.Mutex
@@ -108,7 +117,7 @@ func (app *App) SetupMetrics(config *Config) {
 
 func (app *App) SetupRoutes(mux *http.ServeMux) {
 	app.Mux = mux
-	api.HandleConnect(mux, app.Commands, app.Count, app.Best, &app.TickBroadcast, &app.BestBroadcast)
+	api.HandleConnect(mux, app.Commands, app.Count, app.Best, &app.TickBroadcast, &app.BestBroadcast, app.ReleaseMode)
 }
 
 func (app *App) StartGame() {

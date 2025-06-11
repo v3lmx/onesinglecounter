@@ -2,13 +2,13 @@ package core
 
 import (
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/robfig/cron/v3"
 )
 
@@ -144,7 +144,7 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickBroadcast *Cond, best
 			bestChan <- best
 			err := backup.Backup(count.Load(), best)
 			if err != nil {
-				log.Errorf("Could not backup: %v", err)
+				slog.Error("Could not backup", "error_msg", err)
 			}
 		}
 	}()

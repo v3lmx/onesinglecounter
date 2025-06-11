@@ -12,10 +12,9 @@ import (
 const (
 	MessageIncrement = "inc"
 	MessageReset     = "res"
-	MessageCurrent   = "current"
-	MessageBest      = "best"
 )
 
+// Tester mimics a client to send increment messages to the counter server.
 func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 	defer wg.Done()
 	c, _, err := websocket.DefaultDialer.Dial(url, nil)
@@ -31,10 +30,8 @@ func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 		for {
 			_, _, err := c.ReadMessage()
 			if err != nil {
-				// log.Errorf("read: %v", err)
 				return
 			}
-			// log.Printf("recv: %s", message)
 		}
 	}()
 
@@ -52,13 +49,10 @@ func Tester(ctx context.Context, wg *sync.WaitGroup, url string) {
 				return
 			}
 		case <-ctx.Done():
-			// log.Error("done ctx")
-
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				// log.Errorf("write close: %v", err)
 				return
 			}
 			select {

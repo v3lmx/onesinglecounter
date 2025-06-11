@@ -14,15 +14,11 @@ type Command int
 const (
 	CommandIncrement Command = iota
 	CommandReset
-	CommandCurrent
-	CommandBest
 )
 
 const (
 	MessageIncrement = "inc"
 	MessageReset     = "res"
-	MessageCurrent   = "current"
-	MessageBest      = "best"
 )
 
 type Event struct {

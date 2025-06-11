@@ -68,8 +68,6 @@ jobs:
             mv compose.yml old_compose.yml
             curl -o compose.yml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker/compose-${{ inputs.deploy_env }}.yml
             curl -o /etc/caddy/sites/${{ inputs.deploy_env }}/osc-${{ inputs.deploy_env }}.Caddyfile https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/files/${{ inputs.deploy_env }}.Caddyfile
-            curl -o /etc/vector/configs/osc-${{ inputs.deploy_env }}.toml https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/files/vector-${{ inputs.deploy_env }}.toml
-            chmod 644 /etc/vector/configs/osc-${{ inputs.deploy_env }}.toml
             docker-compose pull
             docker-compose down -f old_compose.yml
             mkdir -p "$(dirname "${{ inputs.backup_best }}")" && touch "${{ inputs.backup_best }}"
