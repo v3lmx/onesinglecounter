@@ -64,7 +64,6 @@ export const timespansList = [
 const messageReset = "res";
 const messageIncrement = "inc";
 const messageCurrent = "current";
-const messageBest = "best";
 
 for (const time of timespansList) {
     best.set(time, 0);
@@ -82,18 +81,6 @@ export function reset() {
 export function increment() {
     ws.send(messageIncrement);
 }
-
-function current() {
-    ws.send(messageCurrent);
-}
-
-export function refreshBest() {
-    ws.send(messageBest);
-}
-
-ws.onopen = () => {
-    current();
-};
 
 ws.onmessage = (event) => {
     const e = event.data.split(":");

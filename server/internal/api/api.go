@@ -8,30 +8,36 @@ import (
 	"strconv"
 	"sync/atomic"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/websocket"
 
 	"github.com/v3lmx/counter/internal/core"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-
-	// todo:security check origin
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
-
-func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond) {
+func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atomic.Uint64, best *core.CurrentBest, tickClock *core.Cond, bestClock *core.Cond, releaseMode string) {
 	mux.HandleFunc("GET /connect", func(w http.ResponseWriter, r *http.Request) {
-		slog.Debug("Get /connect")
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
+		if releaseMode == "debug" {
+			upgrader.CheckOrigin = func(r *http.Request) bool {
+				return true // Allow all origins in debug mode
+			}
+		}
 
+		slog.Debug("Get /connect")
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			slog.Error("error upgrading connection: ", err)
+			slog.Error("error upgrading connection: ", "error_msg", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		defer conn.Close()
+
+		usersTotal := metrics.GetOrCreateCounter(`users_total`)
+		usersTotal.Inc()
+		defer usersTotal.Dec()
 
 		ctx, cancel := context.WithCancel(context.Background())
 
@@ -49,7 +55,7 @@ func HandleConnect(mux *http.ServeMux, commands chan<- core.Command, count *atom
 			case m := <-msg:
 				err := conn.WriteMessage(websocket.TextMessage, []byte(m))
 				if err != nil {
-					slog.Warn("Error writing message: ", err.Error())
+					slog.Warn("Error writing message: ", "error_msg", err.Error())
 					return
 				}
 			}
@@ -76,10 +82,6 @@ func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocke
 			commands <- core.CommandReset
 		case core.MessageIncrement:
 			commands <- core.CommandIncrement
-		case core.MessageCurrent:
-			commands <- core.CommandCurrent
-		case core.MessageBest:
-			commands <- core.CommandBest
 		default:
 			slog.Error("Invalid command: " + string(msg))
 			continue
@@ -110,7 +112,6 @@ func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- stri
 
 func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- string, best *core.CurrentBest, cond *core.Cond) {
 	defer cancel()
-	msg <- core.MessageBest
 	for {
 		if ctx.Err() != nil {
 			return

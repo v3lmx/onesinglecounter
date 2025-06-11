@@ -17,7 +17,7 @@ func checkCORS(next http.Handler) http.Handler {
 }
 
 func main() {
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
 	slog.SetDefault(slog.New(handler))
 
 	config, err := bootstrap.ParseFlags()
