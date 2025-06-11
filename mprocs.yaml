@@ -2,6 +2,9 @@ procs:
   server:
     cwd: "server"
     shell: "wgo run ./cmd/counter"
+  web-shadcn:
+    cwd: "web-svelte-shadcn"
+    shell: "pnpm run dev"
   web:
     cwd: "web-svelte"
     shell: "pnpm run dev"
