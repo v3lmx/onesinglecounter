@@ -264,6 +264,5 @@ func BestLoop(count *atomic.Uint64, best *CurrentBest, tickBroadcast *Cond, best
 		}
 		best.Best.AllTime = c
 		best.Unlock()
-
 	}
 }

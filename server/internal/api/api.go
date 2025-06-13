@@ -75,7 +75,6 @@ func handleEvents(ctx context.Context, cancel context.CancelFunc, conn *websocke
 			slog.Error("Error reading message: " + err.Error())
 			return
 		}
-		slog.Debug(fmt.Sprintf("msg: %b", msg))
 
 		switch string(msg) {
 		case core.MessageReset:
@@ -121,9 +120,7 @@ func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- strin
 		cond.Wait()
 
 		var b core.Best
-		best.RLock()
 		b = best.Copy()
-		best.RUnlock()
 
 		cond.L.Unlock()
 

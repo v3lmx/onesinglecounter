@@ -32,7 +32,6 @@ type CountM struct {
 }
 
 func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond, counterTickTime time.Duration) {
-	slog.Debug("handle game")
 	t := time.NewTicker(counterTickTime)
 
 	defer t.Stop()
@@ -48,7 +47,6 @@ func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond, counterTick
 		if !ok {
 			slog.Error("error receiving from channel event")
 		}
-		slog.Debug("received event: ", "cmd", cmd)
 
 		switch cmd {
 		case CommandReset:
@@ -58,6 +56,5 @@ func Game(commands <-chan Command, count *atomic.Uint64, cond *Cond, counterTick
 		default:
 			slog.Error("invalid event: %v", "cmd", cmd)
 		}
-		slog.Debug("cmd:", "cmd", cmd)
 	}
 }

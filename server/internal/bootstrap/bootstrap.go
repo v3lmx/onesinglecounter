@@ -47,7 +47,7 @@ func ParseFlags() (*Config, error) {
 	flag.StringVar(&config.MetricsPort, "metricsPort", "8001", "Port to expose the metrics")
 	flag.StringVar(&config.BackupCurrentPath, "backupCurrentPath", "./current.bak", "File backup of the current value")
 	flag.StringVar(&config.BackupBestPath, "backupBestPath", "./best.bak", "File backup of the best values")
-	flag.IntVar(&config.CounterTick, "counterTick", 5, "Counter tick time in milliseconds")
+	flag.IntVar(&config.CounterTick, "counterTick", 10, "Counter tick time in milliseconds")
 	flag.IntVar(&config.BestTick, "bestTick", 200, "Best tick time in milliseconds")
 	flag.StringVar(&config.ReleaseMode, "releaseMode", "debug", "release mode, can be 'debug' or 'release'")
 	flag.Parse()
