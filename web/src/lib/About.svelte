@@ -1,6 +1,5 @@
 <script lang="ts">
     import * as Popover from "$lib/components/ui/popover/index.ts";
-    import { ExternalLink } from "lucide";
 
     let text = `how high can we go?
 
@@ -24,6 +23,18 @@ you can see the highest counts achieved for each current period.`;
                     href="https://github.com/v3lmx"
                 >
                     v3lmx ↗
+                </a>
+            </div>
+            <br />
+            <div>
+                <span>see the code </span>
+                <a
+                    class="underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://github.com/v3lmx/onesinglecounter"
+                >
+                    here ↗
                 </a>
             </div>
             <br />
