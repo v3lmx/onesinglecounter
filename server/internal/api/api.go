@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -96,9 +95,6 @@ func handleCount(ctx context.Context, cancel context.CancelFunc, msg chan<- stri
 		}
 
 		cond.L.Lock()
-		// wait for broadcast (tick)
-		// todo: maybe local tick ?? -> how to update it dynamically
-		//		\-> update tick every tick from RWlock value like count?
 		cond.Wait()
 
 		c := count.Load()
@@ -119,8 +115,7 @@ func handleBest(ctx context.Context, cancel context.CancelFunc, msg chan<- strin
 		cond.L.Lock()
 		cond.Wait()
 
-		var b core.Best
-		b = best.Copy()
+		b := best.Copy()
 
 		cond.L.Unlock()
 
