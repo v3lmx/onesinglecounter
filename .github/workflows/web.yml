@@ -46,16 +46,16 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          cache-dependency-path: web-svelte-shadcn/pnpm-lock.yaml
+          cache-dependency-path: web/pnpm-lock.yaml
           node-version: ${{ inputs.node_version }}
           cache: 'pnpm'
 
       - name: Install dependencies
-        working-directory: web-svelte-shadcn
+        working-directory: web
         run: pnpm install
 
       - name: Build Svelte app
-        working-directory: web-svelte-shadcn
+        working-directory: web
         run: pnpm run build
         env:
           VITE_WS_URL: ${{ secrets.ws_url }}
