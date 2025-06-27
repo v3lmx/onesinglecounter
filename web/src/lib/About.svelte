@@ -8,7 +8,7 @@ the counter is the same for everyone, to be incremented by one, or reset to 0.
 you can see the highest counts achieved for each current period.`;
 </script>
 
-<div class="fixed left-1/2 bottom-1 -translate-1/2">
+<div class="absolute bottom-6 right-10">
     <Popover.Root>
         <Popover.Trigger>about</Popover.Trigger>
         <Popover.Content>
