@@ -5,7 +5,7 @@ import path from 'path';
 
 export default defineConfig({
     plugins: [tailwindcss(), svelte()],
-    base: '/osc/',
+    base: '/',
     resolve: {
         alias: {
             $lib: path.resolve("./src/lib"),
