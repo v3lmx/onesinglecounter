@@ -4,10 +4,22 @@ services:
     container_name: "server_prod"
     networks:
       - "app_network_prod"
+    ports:
+      - "10002:8001"
+    command: ./counter -backupBestPath /best.bak -backupCurrentPath /current.bak
+    restart: unless-stopped
+    volumes:
+       - type: bind
+         source: ${BACKUP_BEST_PATH}
+         target: /best.bak
+       - type: bind
+         source: ${BACKUP_CURRENT_PATH}
+         target: /current.bak
 
   web:
     image: ghcr.io/v3lmx/osc_web_prod:latest
     container_name: "web_prod"
+    restart: unless-stopped
     volumes:
       - caddy_data:/data
       - caddy_config:/config

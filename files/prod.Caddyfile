@@ -1,0 +1,7 @@
+handle_path /osc/api/* {
+        reverse_proxy server_prod:8000
+}
+
+handle_path /osc* {
+        reverse_proxy web_prod:80
+}

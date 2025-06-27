@@ -11,12 +11,17 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with: 
       deploy_env: prod
+      backup_best: ${{ vars.BACKUP_BEST_PATH_PROD }}
+      backup_current: ${{ vars.BACKUP_CURRENT_PATH_PROD }}
+    secrets:
       server_ip: ${{ secrets.SERVER_IP }}
       ssh_key: ${{ secrets.SSH_PRIVATE }}
       ssh_user: ${{ secrets.SSH_USER }}
       ssh_port: ${{ secrets.SSH_PORT }}
+      ws_url: ${{ secrets.WS_URL_PROD }}
     permissions:
       contents: read
       packages: write
       attestations: write
       id-token: write
+
